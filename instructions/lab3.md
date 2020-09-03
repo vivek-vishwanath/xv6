@@ -208,13 +208,14 @@ Clone should additionally follow these rules:
    - Virtual address space (shared memory)
    - File descriptor table
    - Current working directory
-  When any thread makes a change to a shared resource (such as writing to memory,
-  allocating new memory, or changing the directory) that change should be visible
-  to all threads in that thread group. 
+
+When any thread makes a change to a shared resource (such as writing to memory,
+allocating new memory, or changing the directory) that change should be visible
+to all threads in that thread group. 
 
 **NOTE:** Clone sets up its stack to be logically equivalent to its parents, however it
 cannot just `memcpy` the stack.  What do you know about stacks that limits you
-from doing this?  How must clone adjust?
+from doing this (think back to lab1's backtrace)?  How must clone adjust?
 
 ### The Thread Library
 
@@ -277,7 +278,7 @@ Tests 11-20:
   - Resource Freeing
   - Security testing (passing bad addresses to OS interfaces)
 Thread Library Testing (22-31)
-  - Simple Tests (22 doesn't use thread_join)
+  - Simple Tests (22 doesn't use thread\_join)
   - More complex tests
   - Shared resources test (e.g. sbrk boundaries, fds)
   - Resource freeing

@@ -92,23 +92,23 @@ either one scheduling quantum (unit of scheduling), or until the process becomes
 non-runnable.  At which point it will select the next process in the circular
 buffer.
 
-For this lab, we require your baseline (non-priority) round-robin scheduler to
-work as implemented in the baseline xv6 kernel.  Specifically:  1) The processes
-in the circular buffer are ordered by Pid.  2) The buffer is stateful, in that
-on a subsequent call to `schedule()`, the scheduler resumes from the position in
-the buffer where it left off.  For example: if a new process becomes runnable
-with a Pid one less than the currently running process, that process will be the
-last to be considered for scheduling.
+For this lab you are to implement a round robin scheduler, much like the default
+xv6 scheduler (note the default xv6 scheduler is a reasonable RR baseline, and you
+may directly use that code, particularly for your non-priority scheduler).  Your
+scheduler must:  Keep circular buffer of processes, then run those processes in order
+assigning a time-quantum to each process.  Once that time quantum has expired, the
+scheduler should run the next available process.
 
 ##### First-In-First-Out
 
-For simplicity, we're slightly altering the definition of our FIFO scheduler
-versus a classic FIFO algorithm.  Instead of relying on creating and maintaining
-a first-in-first-out list, we are maintaining our FIFO buffer in the exact same
-manner as our Round Robbin buffer (processes enter the buffer in PID order, we
-evaluate a process to run in a circular buffer fashion).  There are two major
-differences, however, between RR and FIFO.  1) FIFO will not yield to another
-process until the current process becomes un-runnable.  2) FIFO processes will
+The second scheduler you are to construct is the First-In-First-Out (FIFO) scheduler.
+The FIFO scheduler logically keeps a list of processes, then runs them in-order.  Unlike
+the RR scheduler, as long as the process at the head of the FIFO queue can make process,
+it will not be preempted unless a higher priority process comes along (see the priorities
+section).
+
+There are two major  differences, between RR and FIFO.  1) FIFO will not yield to another
+process of the same priority until the current process becomes un-runnable.  2) FIFO processes will
 always run with higher priority than RR processes (e.g. if there are any
 runnable FIFO processes, they should run before any RR processes).
 
@@ -123,11 +123,11 @@ rules:
 
 - FIFO policy processes always run before RR policy processes
 - Within a scheduling policy, the highest priority process will always run
-  first.  If two processes share priority, then they will run in the buffer-order
-  (as specified in the scheduler specification).  
+  first.  If two processes share priority, then they will run in scheduler order
+  (as specified in the scheduler specification).
 - When a new process becomes runnable, if it should run before the current
-  process, your scheduler should immediately shift to it (with one exception, in
-  "Nit").
+  process, your scheduler should immediately preempt the currently running process and
+  shcedule it (with one exception, in "Nit").
 
 ##### Nit:
 If another process becomes a better candidate than the currently running process

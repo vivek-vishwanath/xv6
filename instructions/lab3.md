@@ -66,7 +66,7 @@ int setscheduler(int pid, int policy, int priority);
 Arguments:
 pid - the pid of the process to change priority (a process may only change the
 scheduler of themselves, or their direct children)
-policy - the scheduler policy (SCHED_RR, SCHED_FIFO, SCHED_OTHER)
+policy - the scheduler policy (SCHED_RR, SCHED_FIFO)
 priority - the priority value to be set (any non-negative int value is
 legal)
 

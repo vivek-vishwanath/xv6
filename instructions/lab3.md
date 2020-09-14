@@ -293,28 +293,6 @@ tests, such as the clone tests, or the scheduler tests -- Second NOTE: This is a
 rough outline of what the tests look at, not a comprehensive list. Please
 consult the spec for a clear outline of what is subject to testing).
 
-Tests 1-10:
-- Scheduler functionality:
-  - FIFO takes priority over RR
-  - priorities within FIFO and RR function
-- `SCHED_FIFO` is FIFO ordered
-
-Tests 11-20:
-- Clone functionality (11-15)
-  - Simple clone functionality (e.g. clones share memory)
-  - Clone corner cases (e.g. Returning from cloned function)
-- Clone Error Testing (16-21)
-  - Bad Inputs
-  - Resource (e.g. Memory, pid) Usage
-  - Resource Freeing
-  - Security testing (passing bad addresses to OS interfaces)
-Thread Library Testing (22-31)
-  - Simple Tests (22 doesn't use thread\_join)
-  - More complex tests
-  - Shared resources test (e.g. sbrk boundaries, fds)
-  - Resource freeing
-  - Resource usage
-
 Points assigned to tests: --
 - Scheduler (20 points total)
   - Tests 1-10, 2 points each

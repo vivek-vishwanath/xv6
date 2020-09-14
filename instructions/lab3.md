@@ -219,6 +219,37 @@ from doing this (think back to lab1's backtrace)?  How must clone adjust?
 
 ### The Thread Library
 
+As part of this lab you will be required to create a (very simple) user-space threading
+library to accompany your kernel `clone` functionality.  The library will include two funcitons:
+
+```c
+Function: thread_create
+Arguments:
+  - start_routine -- A function pointer to the routine that the child thread will run
+  - arg -- the argument passed to start_routine
+Return Value:
+  - 0 on success, -1 on failure
+Description:
+Creates a new child thread.  That thread will immediately begin running start_routine,
+as though invoked with start_routine(arg).
+
+Definition:
+int thread_create(void *(*start_routine)(void *), void *arg);
+
+
+Function: thread_wait
+Return Value:
+  - -1 on failure, pid of the joined thread on success
+Description:
+Waits for a child thread to finish.
+
+Definition:
+int thread_wait();
+```
+
+These functions should be declared in `user/include/user.h`.  Be warned,
+despite this simple interface, these funcitions actually have tricky implementations,
+particularly when attempting to safely avoid memory leaks.
 
 #### Nits
 
@@ -228,7 +259,7 @@ from doing this (think back to lab1's backtrace)?  How must clone adjust?
 - Any thread may spawn child threads.  `thread_join` only waits for a child of the
   currently running thread to finish (It need not wait for its grandchildren or
   siblings).
-- `thread_join` should return the pid of the joined thread, or -1 on error.
+- `thread_wait` should return the pid of the joined thread, or -1 on error.
 - `thread_create` should return the pid of the created thread, or -1 on error.
 
 ## General Principles

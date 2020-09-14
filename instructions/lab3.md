@@ -228,7 +228,7 @@ Arguments:
   - start_routine -- A function pointer to the routine that the child thread will run
   - arg -- the argument passed to start_routine
 Return Value:
-  - 0 on success, -1 on failure
+  - -1 on failure, pid of the created thread on success
 Description:
 Creates a new child thread.  That thread will immediately begin running start_routine,
 as though invoked with start_routine(arg).

@@ -74,7 +74,7 @@ setscheduler should be declared in a program by including "user.h".
 ```
 
 A user-space program should also be able to use the macros `SCHED_RR` and
-`SCHED_FIFO` by including the file `user/include/sched.h` (typically through the
+`SCHED_FIFO` by including the file `include/sched.h` (typically through the
 pre-processor directive `#include "sched.h"`).
 
 #### The Schedulers

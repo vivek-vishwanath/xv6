@@ -122,8 +122,8 @@ schedulers are selecting a process, the scheduler should obey the following
 rules:
 
 - FIFO policy processes always run before RR policy processes
-- Within a scheduling policy, the highest priority process will always run
-  first.  If two processes share priority, then they will run in scheduler order
+- A process will not be scheduled if a higher priority process is runnable.  
+- If two processes share priority, then they will run in scheduler order
   (as specified in the scheduler specification).
 - When a new process becomes runnable, if it should run before the current
   process, your scheduler should immediately preempt the currently running process and

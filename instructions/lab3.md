@@ -121,7 +121,8 @@ Each process has both a scheduler policy and priority.  When each of your
 schedulers are selecting a process, the scheduler should obey the following
 rules:
 
-- FIFO policy processes always run before RR policy processes
+- FIFO policy processes always run before RR policy processes.
+- Higher integral priority values correspond to higher logical priority.
 - A process will not be scheduled if a higher priority process is runnable.  
 - If two processes share priority, then they will run in scheduler order
   (as specified in the scheduler specification).

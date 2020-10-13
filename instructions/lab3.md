@@ -191,9 +191,9 @@ Behavior:
   On success clone creates a new process which shares its address space with its
   parent.  Additionally, clone sets up the child's stack to be logically
   equivalent to the parent's stack.  On clone the child's register state is
-  equivalent to that of the parent, with two exceptions:  eip is 0 for the child
-  and the id of the child for the parent, and the eip of the child points to
-  a location on the child's stack.
+  equivalent to that of the parent, with two exceptions:  eax is 0 for the child
+  and the pid of the child for the parent (recall eax is the return value of a system call), 
+  and the esp of the child points to a location on the child's stack.
 ```
 
 `clone()` creates a new process, and adds it to the caller's "thread group".

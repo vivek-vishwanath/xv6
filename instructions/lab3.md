@@ -177,7 +177,7 @@ int clone(void *stack, int stack_size)
 Arguments:
   stack -- a pointer to the beginning of a memory region of size stack_size, to
            be used as the new thread's stack
-  stack_size -- the size of the new thread's stack
+  stack_size -- the size of the new thread's stack in bytes
 
 Return:
   As with fork, clone returns twice on success (in the child and the parent).

@@ -8,12 +8,12 @@ for the xv6 filesystem.
 
 With these primitives you may build an actual user-space login system (much like
 a Linux Distro's login system), and we encourage you to play around with this
-idea.
+idea (although we're not requiring it as part of the lab work).
 
 NOTE: For simplicity, and to avoid autograder build failures, your lab4 branch
 should have the user-space component for all new system-calls added in this lab.
-You will only need to define the kernel component for these system calls (and,
-of course, test).
+When implementing a new system call you will only need to implement the
+kernel-side component of the call.
 
 ## Part 1 -- Adding Users
 
@@ -62,7 +62,7 @@ non-owners have for a specific file.
 ### Logical Permissions
 
 The permission system logically works in the following way:
-- If a file is accessed by its owner, or `uid` 0 (henceforth `root`), then that
+- If a file is accessed by its owner or `uid` 0 (henceforth `root`), then that
   access is permitted
 - If the file is accessed for reading by another user (not its owner or root)
   and its read permission is set, that access is permitted
@@ -78,7 +78,9 @@ Operations which are considered file accesses (and their acess types) are:
 - stat (read)
 
 If an operation is not permitted, the system call should return -1, and no 
-changes to the disk or file-system state should occur.
+changes to the disk or file-system state should occur.  If the operation is
+permitted, the operation should occur as they did before the permission system
+was added.
 
 NIT: Directory reads include the "path walk" a filesystem does to open a file in
 a nested directory.
@@ -90,9 +92,10 @@ to the xv6 filesystem:
 
 ```c
 /**
- * Changes the owner of the file at filename to uid.
+ * Changes the owner of the file at filename to uid. Returns 1 if
+ * successful, and -1 on failure (on failure no permissions are changed).
  *
- * @arg filename -- The name of the file to change
+ * @arg filename -- A filesystem path naming the file to change
  * @arg uid -- The new owner of the file, valid range is 0x0-0xFFFF
  * 
  * @returns 0 on success, -1 on failure
@@ -105,25 +108,29 @@ And
 
 ```c
 /**
- * Changes the permissions of the file at filename to perm
+ * Changes the permissions of the file at filename to perm.  Returns 1 if
+ * successful, and -1 on failure (on failure no permissions are changed).
  *
- * @arg filename -- The name of the file to change
+ * @arg filename -- A filesystem path naming the file to change
  * @arg perm -- The new permissions for the file.
  * 
- * @returns 0 on success, -1 on failure
+ * @returns 0 on success, -1 on failure.
  */
 
 int chmod(const char *filename, int perm);
 ```
 
-Both of these system calls change the newly added file `owner` and `permission`
-properties.  The permission flags used by `chmod` are `PROT_W` and `PROT_R` as
+Here a filesystem path refers to either a relative path (e.g. "testdir/file1") or
+an absolute path (e.g. "/home/ddevec/testdir/file1").
+
+Both of these system calls change the file's `owner` and `permission` properties
+respectively.  The permission flags used by `chmod` are `PROT_W` and `PROT_R` as
 defined in `include/fs.h`.
 
 Additionally, the following rules should apply to chmod and chown:
 - If an invalid uid is passed to `chown`, chown will fail.
 - Only a file's owner or root may successfully change a file's permission or
-  owner.  All others fail.
+  owner.  All attempts by other users should fail with a return code of -1.
 - Any changes to a files permission or owner are expected to persist on restart.
 
 ### Physical Disk Layout Requirements
@@ -148,16 +155,11 @@ In particular, the on-disk layout of the file's inode must be:
 Additionally, the following requirements must be followed for all file system
 operations:
 - Operations must persist across reboots
-- All filesystem operations (including `chown` and `chmod`) must be atomic.  We
-  recommend exploring xv6's `log` infrastructure to see how to make atomic
-  filesystem operations in xv6 (and associated video).
+- All filesystem operations (including `chown` and `chmod`) must be presistent
+  and atomic.  We recommend exploring xv6's `log` infrastructure to achieve
+  atomic persistent filesystem operations in xv6 (and associated video).
 
 NOTE: You will have to modify mkfs (`tools/mkfs.c`) to support your new
 filesystem inode layout.  You should modify it to default all files as being
 owned by root and having both the read and write permission bits set.
-
-# Potential Part 3
-
-I may add a part 3 with the S bit, give students a working "login" program, and
-allow them to change their user through su. -- I'm not decided on this yet...
 

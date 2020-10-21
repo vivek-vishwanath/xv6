@@ -260,7 +260,7 @@ particularly when attempting to safely avoid memory leaks.
 - All threads within a thread group share all shared resources.
 - If a thread finishes before its children, the behavior of those children
   (threads spawned by this thread) is undefined.
-- Any thread may spawn child threads.  `thread_join` only waits for a child of the
+- Any thread may spawn child threads.  `thread_wait` only waits for a child of the
   currently running thread to finish (It need not wait for its grandchildren or
   siblings).
 - `thread_wait` should return the pid of the joined thread, or -1 on error.

@@ -92,7 +92,7 @@ to the xv6 filesystem:
 
 ```c
 /**
- * Changes the owner of the file at filename to uid. Returns 1 if
+ * Changes the owner of the file at filename to uid. Returns 0 if
  * successful, and -1 on failure (on failure no permissions are changed).
  *
  * @arg filename -- A filesystem path naming the file to change
@@ -108,7 +108,7 @@ And
 
 ```c
 /**
- * Changes the permissions of the file at filename to perm.  Returns 1 if
+ * Changes the permissions of the file at filename to perm.  Returns 0 if
  * successful, and -1 on failure (on failure no permissions are changed).
  *
  * @arg filename -- A filesystem path naming the file to change

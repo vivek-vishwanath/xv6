@@ -82,8 +82,11 @@ changes to the disk or file-system state should occur.  If the operation is
 permitted, the operation should occur as they did before the permission system
 was added.
 
-NIT: Directory reads include the "path walk" a filesystem does to open a file in
+**NIT**: Directory reads include the "path walk" a filesystem does to open a file in
 a nested directory.
+
+By default, all newly created files should be owned by the process that created the file,
+and have `PROT_R` and `PROT_W` both cleared.
 
 ### System Call Interface
 

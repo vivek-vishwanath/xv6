@@ -74,7 +74,7 @@ Operations which are considered file accesses (and their acess types) are:
 - directory reads (read)
 - exec (read)
 - open (read and/or write, depending on flags)
-- file creation (write to file's directory)
+- file creation/removal (write to file's directory)
 - stat (read)
 
 If an operation is not permitted, the system call should return -1, and no 

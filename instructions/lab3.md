@@ -70,7 +70,9 @@ policy - the scheduler policy (SCHED_RR, SCHED_FIFO)
 priority - the priority value to be set (any non-negative int value is
 legal)
 
-setscheduler should be declared in a program by including "user.h".
+setscheduler should be declared in a program by including "user.h" and
+should be defined within the user-space ulib library (ulib_SOURCES
+in user/Sources.cmake).
 ```
 
 A user-space program should also be able to use the macros `SCHED_RR` and

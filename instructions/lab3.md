@@ -302,10 +302,10 @@ Points assigned to tests: --
   - Tests 1-10, 2 points each
 - Clone Functionality (20 points total)
   - Tests 11-15 - 4 points each
-- Clone error /security (9 points total)
-  - Tests 19-21 - 3 points each
+- Clone error / security (18 points total)
+  - Tests 16-21 - 3 points each
 - Thread library general testing (20 points total)
   - Tests 22-26 - 4 points each
-- Thread library error / security testing (12 points)
+- Thread library error / security testing (15 points)
   - Tests 27-31 - 3 points each
 

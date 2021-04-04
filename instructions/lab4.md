@@ -155,13 +155,14 @@ In particular, the on-disk layout of the file's inode must be:
 +0x10 - 48bytes - addres -- Array of data block addresses + indirect block address
 ```
 
+A `perms` value of 3 should indicate the PROT_R and PROT_W bits are both set.
+
 Additionally, the following requirements must be followed for all file system
 operations:
 - Operations must persist across reboots
 - All filesystem operations (including `chown` and `chmod`) must be presistent
   and atomic.  We recommend exploring xv6's `log` infrastructure to achieve
   atomic persistent filesystem operations in xv6 (and associated video).
-- A `perms` value of 3 should indicate the PROT_R and PROT_W bits are both set.
 
 NOTE: You will have to modify mkfs (`tools/mkfs.c`) to support your new
 filesystem inode layout.  You should modify it to default all files as being

@@ -65,9 +65,9 @@ The permission system logically works in the following way:
 - If a file is accessed by its owner or `uid` 0 (henceforth `root`), then that
   access is permitted
 - If the file is accessed for reading by another user (not its owner or root)
-  and its read permission is set, that access is permitted
+  and its read permission is set (the `PROT_R` bit is `1`), that access is permitted
 - If the file is accessed for writing by another user (not its owner or root)
-  and its write permission is set, that access is permitted
+  and its write permission is set (the `PROT_W` bit is `1`), that access is permitted
 - All other accesses are not permitted.
 
 Operations which are considered file accesses (and their acess types) are:
@@ -161,6 +161,7 @@ operations:
 - All filesystem operations (including `chown` and `chmod`) must be presistent
   and atomic.  We recommend exploring xv6's `log` infrastructure to achieve
   atomic persistent filesystem operations in xv6 (and associated video).
+- A `perms` value of 3 should indicate the PROT_R and PROT_W bits are both set.
 
 NOTE: You will have to modify mkfs (`tools/mkfs.c`) to support your new
 filesystem inode layout.  You should modify it to default all files as being

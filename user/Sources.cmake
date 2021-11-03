@@ -5,6 +5,7 @@
 set(ulib_SOURCES
   # Contains all of the system calls
   asm/usys.S
+  asm/free_stack_and_exit.S
 
   # Common library functions
   src/ulib.c

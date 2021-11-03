@@ -257,6 +257,13 @@ These functions should be declared in `user/include/user.h`.  Be warned,
 despite this simple interface, these funcitions actually have tricky implementations,
 particularly when attempting to safely avoid memory leaks.
 
+**Important: Lab3's thread library has some rather tricky behavior related to 
+deallocating its stack. We provide you with a small assembly segment which 
+calls "free" of the stack of currently running thread, then calls exit 
+safely. You may use this code in your project. (To use `free_stack_and_exit`,
+include the header "free_stack_and_exit.h". The source code for it can 
+be found in `user/asm/free_stack_and_exit.S`)**
+
 #### Nits
 
 - All threads within a thread group share all shared resources.

@@ -65,28 +65,36 @@ The permission system logically works in the following way:
 - If a file is accessed by its owner or `uid` 0 (henceforth `root`), then that
   access is permitted
 - If the file is accessed for reading by another user (not its owner or root)
-  and its read permission is set (the `PROT_R` bit is `1`), that access is permitted
+  and its read permission is set, that access is permitted
 - If the file is accessed for writing by another user (not its owner or root)
-  and its write permission is set (the `PROT_W` bit is `1`), that access is permitted
+  and its write permission is set, that access is permitted
 - All other accesses are not permitted.
 
-Operations which are considered file accesses (and their acess types) are:
+You will need to identify any high-level operations which involve file accesses.
+If an operation involves this, you must confirm the specific access type
+performed is permitted for the given process. A sample of operations involving
+file accesses are included below:
 - directory reads (read)
+- open (read and/or write, depending on the flags)
+- file creation (write to file's directory)
 - exec (read)
-- open (read and/or write, depending on flags)
-- file creation/removal (write to file's directory)
-- stat (read)
 
 If an operation is not permitted, the system call should return -1, and no 
 changes to the disk or file-system state should occur.  If the operation is
 permitted, the operation should occur as they did before the permission system
 was added.
 
-**NIT**: Directory reads include the "path walk" a filesystem does to open a file in
+**NIT**:
+- Directory reads include the "path walk" a filesystem does to open a file in
 a nested directory.
+- When creating or removing a file, the file's full directory path must be readable
+but ONLY the file's immediate directory needs to be writeable
 
-By default, all newly created files should be owned by the process that created the file,
-and have `PROT_R` and `PROT_W` both cleared.
+By default, when the build system creates the disk image `user/fs.img` that xv6 will
+use in the build directory, all files should be owned by root and both readable and
+writeable for any user. After the disk image is built and xv6 starts, all newly
+created files should be owned by the process that created the file and have `PROT_R`
+and `PROT_W` both cleared. Details on the disk image can be found below.
 
 ### System Call Interface
 
@@ -155,8 +163,6 @@ In particular, the on-disk layout of the file's inode must be:
 +0x10 - 48bytes - addres -- Array of data block addresses + indirect block address
 ```
 
-A `perms` value of 3 should indicate the PROT_R and PROT_W bits are both set.
-
 Additionally, the following requirements must be followed for all file system
 operations:
 - Operations must persist across reboots
@@ -165,6 +171,9 @@ operations:
   atomic persistent filesystem operations in xv6 (and associated video).
 
 NOTE: You will have to modify mkfs (`tools/mkfs.c`) to support your new
-filesystem inode layout.  You should modify it to default all files as being
+filesystem inode layout. You should modify it to default all files to being
 owned by root and having both the read and write permission bits set.
 
+Your filesystem will persist across reboots to xv6. If you need to recreate your
+initial filesystem, you can perform a clean build or remove the disk image
+`user/fs.img` located within your build directory.

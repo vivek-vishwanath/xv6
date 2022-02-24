@@ -11,6 +11,7 @@ set(ulib_SOURCES
   src/ulib.c
   src/umalloc.c
   src/printf.c
+  src/threads.c
   )
 
 # User-space programs, 

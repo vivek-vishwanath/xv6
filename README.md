@@ -276,7 +276,7 @@ Function: unpark
 Arguments:
   - chan -- The channel to sleep on
 Return value:
- - -1 on failure, 0 on success
+ - -1 on failure, number of processes woken up on success
 Description:
 Wake up at most one process sleeping on channel chan.
 

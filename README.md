@@ -5,10 +5,6 @@ The purpose of this lab is to introduce you to the concepts of concurrency.
 This is a *large* lab, larger than the labs you've done so far. You must
 complete the parts in order.
 
-We have divided it into two checkpoints:
-- Checkpoint 1: Parts 1 to 2
-- Checkpoint 2: Parts 3 to 5
-
 To give a sense of how long it may take to complete each part, we've marked
 them with the following labels:
 - easy: 30m to 1hr
@@ -414,12 +410,18 @@ As usual, you will submit this lab to the autograder.  As this lab is larger
 than prior labs, we will give you some guidance as to what the autograder is
 testing for.
 
-Note that there are **two** assignments on Gradescope:
-- Lab 3: Checkpoint 1
-- Lab 3: Full
+- Clone Functionality
+  - Tests 1-5
+- Clone error / security
+  - Tests 6-11
+- Thread library general testing
+  - Tests 12-16
+- Thread library error / security testing
+  - Tests 17-21
+- Remaining tests: TBD, will be updated when ready
 
-TBD about bonus points
+On Gradescope you will find two assignments:
+- Lab 3 - Checkpoint 1
+- Lab 3 - Checkpoint 2
 
-### Test distribution
-
-TBD
+Your final Lab 3 score is equal to the score you get for Checkpoint 2 (autograded + hand-graded). This means that you can continue working on checkpoint 1 after the due date. If you are able to pass all the autograder tests for checkpoint 1 by the due date, **five bonus points** will be added to your final Lab 3 score.

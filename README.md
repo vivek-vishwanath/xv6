@@ -5,6 +5,10 @@ The purpose of this lab is to introduce you to the concepts of concurrency.
 This is a *large* lab, larger than the labs you've done so far. You must
 complete the parts in order.
 
+To help you stay organized, we have split it into two main checkpoints:
+- Checkpoint 1 (Parts 1 and 2)
+- Checkpoint 2 (Full lab)
+
 To give a sense of how long it may take to complete each part, we've marked
 them with the following labels:
 - easy: 30m to 1hr

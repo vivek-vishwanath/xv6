@@ -400,7 +400,7 @@ any OS code should be free of memory leaks and data-races. Your code should
 error out correctly when given bad inputs, and shouldn't leak resources (memory,
 process table entries, or fds, etc), even in the instance of failures.
 
-Lastly, we encourage you to have fun while implementing it. It may seem dauting
+Lastly, we encourage you to have fun while implementing it. It may seem daunting
 at first, but know full-well that you have all that you need to do well in this
 lab. Make good use of lectures, Piazza, and office hours: we're there to help.
 

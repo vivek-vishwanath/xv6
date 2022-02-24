@@ -130,7 +130,7 @@ threading library.
 You will now implement the following userspace library functions to allow users
 to easily create and wait on threads. These functions are defined in
 `user/src/threads.c`.
-```c
+```
 Function: thread_create
 Arguments:
   - start_routine -- A function pointer to the routine that the child thread will run

@@ -8,7 +8,7 @@
 /** Threads */
 
 int thread_create(void *(*start_routine)(void *), void *arg);
-int thread_wait();
+int thread_wait(int pid);
 
 /** Spinlock */
 

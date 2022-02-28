@@ -422,7 +422,21 @@ testing for.
   - Tests 12-16
 - Thread library error / security testing
   - Tests 17-21
-- Remaining tests: TBD, will be updated when ready
+- Spinlock
+  - Test 22
+- Park, setpark, unpark
+  - Tests 23-25
+- Mutex
+  - Test 26
+- Waitpid
+  - Test 27
+- Condvar
+  - Tests 28-31
+
+**IMPORTANT**: Since this lab has a good deal of concurrency involved, you may
+be able to pass some tests without correctly implementing some of these
+primitives. We will be looking over your submission when hand-grading, so
+please thoroughly test your implementation.
 
 On Gradescope you will find two assignments:
 - Lab 3 - Checkpoint 1

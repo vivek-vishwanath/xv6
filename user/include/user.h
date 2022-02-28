@@ -23,6 +23,11 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int clone(void *stack, int size);
+int park(void *chan);
+int setpark(void *chan);
+int unpark(void *chan);
+int waitpid(int);
 
 // ulib.c
 int stat(const char*, struct stat*);

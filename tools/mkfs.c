@@ -84,7 +84,7 @@ main(int argc, char *argv[])
   static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
 
   if(argc < 2){
-    fprintf(stderr, "Usage: mkfs fs.img files...\n");
+    fprintf(stderr, "Usage: mkfs <target>.img <init name> files...\n");
     exit(1);
   }
 
@@ -153,7 +153,11 @@ main(int argc, char *argv[])
 
     bzero(&de, sizeof(de));
     de.inum = xshort(inum);
-    strncpy(de.name, argv[i], DIRSIZ-1);
+    if (i > 2) {
+      strncpy(de.name, argv[i], DIRSIZ-1);
+    } else {
+      strncpy(de.name, "init", DIRSIZ-1);
+    }
     iappend(rootino, &de, sizeof(de));
 
     while((cc = read(fd, buf, sizeof(buf))) > 0)

@@ -1,2 +1,4 @@
 *~
 .gdbinit
+.DS_Store
+build/

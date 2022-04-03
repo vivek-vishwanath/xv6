@@ -45,6 +45,7 @@ add_custom_command(
 
 # Copy the run script
 configure_file(${CMAKE_SOURCE_DIR}/scripts/xv6-qemu ${CMAKE_CURRENT_BINARY_DIR}/xv6-qemu COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/scripts/login-xv6-qemu ${CMAKE_CURRENT_BINARY_DIR}/login-xv6-qemu COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/gdbinit ${CMAKE_CURRENT_BINARY_DIR}/.gdbinit COPYONLY)
 
 # Copy the gdb script

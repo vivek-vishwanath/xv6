@@ -2,8 +2,6 @@
 #include "user.h"
 #include "login.h"
 
-#define MAX_INPUT_SIZE (100)
-
 /**
  * Prompt and get input from console
  * 

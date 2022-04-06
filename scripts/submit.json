@@ -1,6 +1,7 @@
 {
 	"files": [
-	  "CMakeLists.txt"
+	  "CMakeLists.txt",
+    "login_design.md"
 	],
 	"folders": [
 	  "bootblock",
@@ -9,7 +10,7 @@
 	  "tools",
 	  "user"
 	],
-	"base_commit": "a2c6c4593a313603b001b6d39130d0cdc99ef651",
+	"base_commit": "8ab9302084ffe945672a35096ddfd7e70169a6ae",
 	"git_history": true,
 	"ignore": [
 	  ".DS_Store",

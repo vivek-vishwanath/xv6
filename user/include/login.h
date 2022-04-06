@@ -1,6 +1,8 @@
 #ifndef INCLUDE_LOGIN_h_
 #define INCLUDE_LOGIN_h_
 
+#define MAX_INPUT_SIZE (100)
+
 /**
  * Hook into user/src/login/login_init.c in order to intialize any files or
  * data structures necessary for the login system

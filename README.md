@@ -284,7 +284,10 @@ autograder are categorized in the following manner:
 
 - User: 1 - 5
 - Filesystem: 6 - 17
-- Login: to be released by class on 04/05
+- Login: 18 - 27
+
+When submitting utilize the provided `scripts/submit.sh`. If you do not have
+Python 3.7+ on your local machine, run this script in the Docker container.
 
 **Note**:
 

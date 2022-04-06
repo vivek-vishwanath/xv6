@@ -1,0 +1,19 @@
+{
+	"files": [
+	  "CMakeLists.txt"
+	],
+	"folders": [
+	  "bootblock",
+	  "include",
+	  "kernel",
+	  "tools",
+	  "user"
+	],
+	"base_commit": "a2c6c4593a313603b001b6d39130d0cdc99ef651",
+	"git_history": true,
+	"ignore": [
+	  ".DS_Store",
+	  "__pycache__"
+	]
+}
+      

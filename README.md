@@ -282,8 +282,8 @@ lowered to its uid
 As usual, you will submit this lab to the autograder. The tests in the
 autograder are categorized in the following manner:
 
-- User: 1 - 5
-- Filesystem: 6 - 17
+- User: 1 - 4
+- Filesystem: 5 - 17
 - Login: 18 - 27
 
 When submitting utilize the provided `scripts/submit.sh`. If you do not have

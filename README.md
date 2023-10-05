@@ -410,9 +410,7 @@ We are working on setting this up. Stay tuned!
 
 ## Autograder
 
-As usual, you will submit this lab to the autograder.  As this lab is larger
-than prior labs, we will give you some guidance as to what the autograder is
-testing for.
+As usual, you will submit this lab to the autograder. The testcases are shown below:
 
 - Clone Functionality
   - Tests 1-5
@@ -443,3 +441,10 @@ On Gradescope you will find two assignments:
 - Lab 3 - Checkpoint 2
 
 Your final Lab 3 score is equal to the score you get for checkpoint 2 (autograded + hand-graded). This means that you can continue working on checkpoint 1 after the due date. If you are able to pass all the autograder tests for checkpoint 1 by the due date, **five bonus points** will be added to your final Lab 3 score.
+
+## Hand Grading
+Similar to lab 2, there is a hand graded section of the lab. We will check for
+the following:
+- Mutal exclusion in newly created kernel data structures
+- Attempts to attempts to subvert the autograder
+- Violations of the student honor code

@@ -446,5 +446,5 @@ Your final Lab 3 score is equal to the score you get for checkpoint 2 (autograde
 Similar to lab 2, there is a hand graded section of the lab. We will check for
 the following:
 - Mutal exclusion in newly created kernel data structures
-- Attempts to attempts to subvert the autograder
+- Attempts to subvert the autograder
 - Violations of the student honor code

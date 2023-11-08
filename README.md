@@ -277,6 +277,26 @@ lowered to its uid
 - Changes made in the `xv6-qemu` file system will not persist to
 `login-xv6-qemu` and vice versa since they use different file system images.
 
+## Bonus -- sudo Utility
+
+As you probably know, the `sudo` command is a powerful utility in Unix-like operating systems that allows a permitted user to execute a command as the superuser or another user, as specified by a security policy. For an additional **10 points** on this lab, you can implement a simple `sudo` utility for xv6. Your implementation will involve creating a secure way to authenticate a user and then execute a command with root privileges. 
+
+Now that you are familiar with xv6, this task is more open-ended than the previous tasks. How you implement privelage escalation is up to you, but its security will be evaluated as a part of handgrading. 
+
+Write a new user-space program, `sudo.c`, that will authenticate the user and execute a given command with root privileges. If the user is already root, don't require a password. If the user inputs the wrong password, print `Authentication failed`. 
+
+```
+# Example usage of sudo for non-root user
+$ sudo mkdir foo
+correctpass123
+# (foo was successfully created)
+$ sudo mkdir bar
+wrongpass321
+Authentication failed
+# (bar was not created)
+$
+```
+
 ## Autograder
 
 As usual, you will submit this lab to the autograder. The tests in the

@@ -3,7 +3,7 @@
 The purpose of this lab is to have you explore how the kernel can enable
 user-space applications to build their own isolation and login systems through
 simple, minimal, low-level kernel interfaces. To accomplish this you will
-create a simple, but realistic user system, a file permission system, and a
+create a simple (but realistic) user system, a file permission system, and a
 a user-space login system.
 
 We have provided primitive cryptographic tools for hashing and encrypting data.
@@ -11,8 +11,8 @@ The expectation is for you to utilize these tools when building your login
 system to safely but efficiently store user data.
 
 NOTE: For simplicity, and to avoid autograder build failures, the branch for
-lab 4 has the user-space components for all new system calls already
-implemented. You are expected to add the kernel-side component of the call.
+Lab 4 has the userspace components for all new system calls already
+implemented. You are expected to add the kernel-side component of these calls.
 
 ## Part 1 -- Adding Users
 
@@ -46,13 +46,13 @@ Beyond this description the following rules should be applied for uids:
 ## Part 2 -- File Permissions
 
 Now that you have a basic user identifier system working, you'll be adding file
-permissions to the system which leverage the `uid` system to logically isolate
+permissions to the system which leverage the `uid` feature to logically isolate
 certain files.
 
-To accomplish this, you will add several properties to each file and directory
-within xv6. First, the `owner` field will determine which uid `owns` a specific
-file. Second, the `permission` field will determine the access privileges
-non-owners have for a specific file.
+You will need to add several properties to each file and directory within xv6.
+First, the `owner` field will determine which uid `owns` a specific file.
+Second, the `permission` field will determine the access privileges non-owners
+have for a specific file.
 
 ### Logical Permissions
 
@@ -60,14 +60,14 @@ The permission system logically works in the following way:
 
 - If a file is accessed by its owner or `uid` 0 (henceforth `root`), then that
   access is permitted
-- If the file is accessed for reading by another user (not its owner or root)
+- If a file is accessed for reading by another user (not its owner or root)
   and its read permission is set, that access is permitted
-- If the file is accessed for writing by another user (not its owner or root)
+- If a file is accessed for writing by another user (not its owner or root)
   and its write permission is set, that access is permitted
-- All other accesses are not permitted.
+- All other accesses are not permitted
 
 You will need to identify any high-level operations which involve file accesses.
-If an operation involves this, you must confirm the specific access type
+If an operation accesses a file, you must confirm that the specific access type
 performed is permitted for the given process. A sample of operations involving
 file accesses are included below:
 
@@ -77,14 +77,14 @@ file accesses are included below:
 - exec (read)
 
 If an operation is not permitted, the system call should return -1, and no
-changes to the disk or file-system state should occur. If the operation is
-permitted, the operation should occur as they did before the permission system
+changes to the disk or file-system state should occur. If an operation is
+permitted, the operation should complete as it did before the permission system
 was added.
 
 **NOTE**:
 
 - Directory reads include the "path walk" a filesystem does to open a file in
-a nested directory.
+a nested directory
 - When creating or removing a file, the file's full directory path must be
 readable but ONLY the file's immediate directory needs to be both readable and
 writeable
@@ -93,8 +93,8 @@ By default, when the build system creates the disk image `user/fs.img` that xv6
 will use in the build directory, all files should be owned by root and both
 readable and writeable for any user. After the disk image is built and xv6
 starts, all newly created files should be owned by the process that created the
-file and have `PROT_R` and `PROT_W` both cleared. Details on the disk image can
-be found below.
+file and have `PROT_R` and `PROT_W` both cleared. Details on the disk image and
+the `PROT_R` and `PROT_W` flags can be found below.
 
 ### System Call Interface
 
@@ -103,8 +103,8 @@ to the xv6 filesystem:
 
 ```c
 /**
- * Changes the owner of the file at filename to uid. On failure no permissions
- * are changed).
+ * Changes the owner of the file at filename to uid. On failure, no permissions
+ * are changed.
  *
  * @param filename A filesystem path naming the file to change
  * @param uid The new owner of the file, valid range is 0x0-0xFFFF
@@ -114,8 +114,8 @@ to the xv6 filesystem:
 int chown(const char *filename, int uid);
 
 /**
- * Changes the permissions of the file at filename to perm. On failure no
- * permissions are changed).
+ * Changes the permissions of the file at filename to perm. On failure, no
+ * permissions are changed.
  *
  * @param filename A filesystem path naming the file to change
  * @param perm The new permissions for the file.
@@ -136,8 +136,8 @@ Additionally, the following rules should apply to `chmod` and `chown`:
 
 - If an invalid uid is passed to `chown`, the system call will fail
 - Only a file's owner or root may successfully change a file's permission or
-  owner. All attempts by other users should fail with a return code of -1.
-- Any changes to a files permission or owner are expected to persist on restart.
+  owner. All attempts by other users should fail with a return code of -1
+- Any changes to a files permission or owner are expected to persist on restart
 
 ### Physical Disk Layout Requirements
 
@@ -164,7 +164,7 @@ operations:
 - Operations must persist across restarts
 - All filesystem operations (including `chown` and `chmod`) must be persistent
   and atomic. We recommend exploring xv6's `log` infrastructure (and associated
-  video). to achieve atomic persistent filesystem operations in xv6.
+  video) to achieve atomic persistent filesystem operations in xv6.
 
 **NOTE**:
 
@@ -189,11 +189,7 @@ Your key contributions will be decision making in the design and implementation
 of a secure mechanism for storing and retrieving passwords in xv6. Please refer
 to content discussed in the security lectures as well as resources online
 regarding Linux's own password system for inspiration. The autograder will be
-testing for correctness of your implementation being able to facilitate login,
-but emphasis will be put on handgrading to check for secureness of your design.
-Please include `login_design.md` in your final submission which describes what
-mechanisms you utilized to secure your system, which files are created in the
-process, and what the content of those files mean.
+testing for correctness of your implementation being able to facilitate login.
 
 Instead of launching xv6 by using `xv6-qemu`, we have provided an alternative
 script `login-xv6-qemu` which relies on `user/src/login/login_init.c` and
@@ -271,7 +267,7 @@ int login_user(char *username, char *password);
 - By default, there should exist a root user with username of `root` and
 password of `admin`. This user will maintain the uid of 0 and will not have to
 be created by manual entry.
-- Created users should persist reboot
+- Created users should persist across reboots
 - Prior to the shell being launched, the user should have its permissions
 lowered to its uid
 - Changes made in the `xv6-qemu` file system will not persist to
@@ -279,11 +275,21 @@ lowered to its uid
 
 ## Bonus -- sudo Utility
 
-As you probably know, the `sudo` command is a powerful utility in Unix-like operating systems that allows a permitted user to execute a command as the superuser or another user, as specified by a security policy. For an additional **10 points** on this lab, you can implement a simple `sudo` utility for xv6. Your implementation will involve creating a secure way to authenticate a user and then execute a command with root privileges. 
+As you probably know, the `sudo` command is a powerful utility in Unix-like 
+operating systems that allows a permitted user to execute a command as the 
+superuser or another user, as specified by a security policy. For an additional
+**10 points** on this lab, you can implement a simple `sudo` utility for xv6.
+Your implementation will involve creating a secure way to authenticate a user
+and then execute a command with root privileges. 
 
-Now that you are familiar with xv6, this task is more open-ended than the previous tasks. How you implement privelage escalation is up to you, but its security will be evaluated as a part of handgrading. 
+Now that you are familiar with xv6, this task is more open-ended than the 
+previous tasks. How you implement privilege escalation is up to you, but its
+security will be evaluated as a part of handgrading.
 
-Write a new user-space program, `sudo.c`, that will authenticate the user and execute a given command with root privileges. If the user is already root, don't require a password. If the user inputs the wrong password, print `Authentication failed`. 
+Write a new user-space program, `sudo.c`, that will authenticate the user and
+execute a given command with root privileges if the correct root password is
+provided. If the user is already root, no password is required. If the user
+inputs the wrong password, print `Authentication failed`.
 
 ```
 # Example usage of sudo for non-root user
@@ -313,3 +319,33 @@ Python 3.7+ on your local machine, run this script in the Docker container.
 
 Even though these are categorizations of the tests, you can assume subsequent
 parts can rely on elements from previous parts as was the case in previous labs.
+
+## Write-Up
+
+To better demonstrate contributions toward the completion of Lab 4, students
+working with a partner are required to submit a write-up documenting the
+design and implementation of Parts 1, 2, 3 and Bonus (if completed).
+The write-up should include an overview of modifications made to xv6 to satisfy
+the requirements of each part, any interesting design decisions you made to
+achieve functionality, and the contributions you made to the project. The
+write-up does not have a minimum length requirement, but should be substantive
+enough to demonstrate your understanding of what was accomplished in Lab 4. An
+acceptable write-up will typically have at least 1 long paragraph for each part
+that describes your work on and understanding of those parts.
+
+Note that each student in a 2-person team must submit a separate write-up. This
+write-up must be original to each student (i.e., both partners may not submit 
+the same write-up).
+
+Students who work solo (i.e., without a partner) are not required to complete a
+write-up, but may include one to help us better understand your submission
+during grading.
+
+## Hand Grading
+
+Lab 4 also includes a hand-grading portion. Hand-grading for Lab 4 will check
+for code/implementation correctness and will involve a review of the write-ups
+for each partner in a 2-partner group. Write-ups will be weighed individually
+per student, such that two partners may receive different scores on the
+hand-grading portion of Lab 4 if they did not contribute equally to the
+assignment.

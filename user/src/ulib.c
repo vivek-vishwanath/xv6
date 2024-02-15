@@ -104,3 +104,26 @@ memmove(void *vdst, const void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
+
+void itoa(int value, char* buf) {
+
+static char digits[] = "0123456789ABCDEF";
+  int i, neg;
+  uint x;
+  int base = 10;
+
+  neg = 0;
+  if(value < 0){
+    neg = 1;
+    x = -value;
+  } else {
+    x = value;
+  }
+
+  i = 0;
+  do{
+    buf[i++] = digits[x % base];
+  }while((x /= base) != 0);
+  if(neg)
+    buf[i++] = '-';
+}

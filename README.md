@@ -1,12 +1,16 @@
-# Lab 3 -- Threading
+# Lab 3 -- Scheduling and Threading
 
-The purpose of this lab is to introduce you to the concepts of concurrency.
+The purpose of this lab is to introduce you to the concepts of
+scheduling and concurrency.  This lab consists primarily of two parts:  First,
+you will be extending xv6's scheduler to support multiple new schedulers.
+Second, you will be constructing a kernel-space threading library. 
+This lab also includes an extra-credit oppertunity that asks you to run performance 
+analysis and implement your own scheduling algorithm.
 
-This is a *large* lab, larger than the labs you've done so far. You must
-complete the parts in order.
+This is a *large* lab, larger than the labs you've done so far, so be warned! 
 
 To help you stay organized, we have split it into two main checkpoints:
-- Checkpoint 1 (Parts 1 and 2)
+- Checkpoint 1 (Parts 1, 2, 3)
 - Checkpoint 2 (Full lab)
 
 To give a sense of how long it may take to complete each part, we've marked
@@ -19,19 +23,202 @@ Note that there are just estimates. Your completion time will vary based on
 your grasp of the course material and proficiency with navigating xv6. We
 highly recommend that you read chapters 3 to 5 of the xv6 manual.
 
-## General notes
-
-- We are providing a minimum interface specification, you must build
-at least these system calls.  However, if needed, you may build additional
-system calls to aid you in your lab construction (although you may not modify
-the interface of these system calls).
-- Throughout this lab, you will have to test the concurrency of your
+**NOTE:** Throughout this lab, you will have to test the concurrency of your
 system.  You will have to run the `xv6-qemu` script with multiple cpus (default
 is 1 cpu) using the `-c <CPUS>` or `--num-cpus=<CPUS>` flags.  We recommend
 initial debugging with 1 cpu, to make things easier to parse, then further
 debugging with additional cpus.
 
-## Part 1 (hard) -- Threading
+```
+// Make sure you see the following lines of code
+// when running ./xv6-qemu -c 4 for example
+cpu1: starting 1
+cpu2: starting 2
+cpu3: starting 3
+cpu0: starting 0
+```
+
+## Part 1 (moderate) -- Scheduling
+
+In this portion of the lab we will define a basic scheduler API, and build several new
+schedulers.
+
+#### Background
+Recall the xv6 scheduler is found in `kernel/src/proc.c`, in the `scheduler()` function, and by
+default implements a round robin (RR) scheduler. After each CPU is setup, all
+eventually reach `mpmain()`, where `scheduler()` is called for the first time.
+`scheduler()` loops over the process table in order looking for `RUNNABLE`
+processes. When a `RUNNABLE` process is found, the kernel switches to that
+process. It executes until it finishes or until a timer tick interrupts it and
+causes the process to `yield()`.
+
+Remember that the timer is a hardware interrupt. The code for handling this is
+found in `kernel/src/trap.c`, around line 105.
+
+```
+// Force process to give up CPU on clock tick.
+// If interrupts were on while locks held, would need to check nlock.
+if (proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
+  yield();
+```
+
+`yield()` sets the current process to `RUNNABLE` and then switches directly to the
+kernel scheduler.
+
+### The Spec
+
+For this portion of the lab, you will be enabling the user-space to specify
+their scheduler policy.  You will:
+
+- Enable the user-space to select their scheduling policy (`SCHED_RR`, or
+  `SCHED_FIFO`)
+- Enable the user-space process to set a priority.
+- Implement two new schedulers: Round Robin with Priority and FIFO with Priority
+
+
+#### Added System Call
+
+To enable the user-space to set their scheduler policy, you will be adding one
+system-call to the kernel:
+
+```
+int setscheduler(int pid, int policy, int priority);
+
+Arguments:
+pid - the pid of the process to change priority (a process may only change the
+scheduler of themselves, or their direct children)
+policy - the scheduler policy (SCHED_RR, SCHED_FIFO)
+priority - the priority value to be set (any non-negative int value is
+legal)
+
+setscheduler should be declared in a program by including "user.h" and
+should be defined within the user-space ulib library (ulib_SOURCES
+in user/Sources.cmake).
+```
+
+A user-space program should also be able to use the macros `SCHED_RR` and
+`SCHED_FIFO` by including the file `include/sched.h` (typically through the
+pre-processor directive `#include "sched.h"`).
+
+#### Scheduling Algorithms
+
+You will be building two schedulers for this lab, a Round Robin (RR), and a
+First In First Out (FIFO) scheduler.  We will also be adding a notion of
+priority to these schedulers.  We will explain the behaviors of these
+schedulers without priority first, then add the notion of priority after.
+
+##### Round Robin
+
+Your Round Robin scheduler will logically create a circular buffer of processes
+to run, and loops over the buffer.  It will run each process in the buffer for
+either one scheduling quantum (unit of scheduling), or until the process becomes
+non-runnable.  At which point it will select the next process in the circular
+buffer.
+
+For this lab you are to implement a round robin scheduler, much like the default
+xv6 scheduler (note the default xv6 scheduler is a reasonable RR baseline, and you
+may directly use that code, particularly for your non-priority scheduler).  Your
+scheduler must:  Keep circular buffer of processes, then run those processes in order
+assigning a time-quantum to each process.  Once that time quantum has expired, the
+scheduler should run the next available process.
+
+##### First-In-First-Out
+
+The second scheduler you are to construct is the First-In-First-Out (FIFO) scheduler.
+The FIFO scheduler logically keeps a list of processes, then runs them in-order.  Unlike
+the RR scheduler, as long as the process at the head of the FIFO queue can make process,
+it will not be preempted unless a higher priority process comes along (see the priorities
+section).
+
+There are two major  differences, between RR and FIFO.  1) FIFO will not yield to another
+process of the same priority until the current process becomes un-runnable.  2) FIFO processes will
+always run with higher priority than RR processes (e.g. if there are any
+runnable FIFO processes, they should run before any RR processes).
+
+##### Priorities
+
+Now that we've specified the basics of FIFO and RR scheduling, we'll specify
+our priority policy.
+
+Each process has both a scheduler policy and priority.  When each of your
+schedulers are selecting a process, the scheduler should obey the following
+rules:
+
+- FIFO policy processes always run before RR policy processes.
+- Higher priority values correspond to higher logical priority.
+- A process will not be scheduled if a higher priority process is runnable.  
+- If two processes share priority, then they will run in scheduler order
+  (as specified in the scheduler specification).
+- When a new process becomes runnable, if it should run before the current
+  process, your scheduler should immediately preempt the currently running process and
+  shcedule it (with one exception, in "Nit").
+
+
+##### Nit:
+If another process becomes a better candidate than the currently running process
+the kernel must immediately switch to running that process.
+
+There is one exception to this rule. If there are multiple CPUs active, and an
+action on CPU ` c1` running process `p1`causes a process to become
+RUNNABLE that is not higher priority than `p1`, but is higher priority than
+process `p2` currently running on a different CPU `c2`, then `c2` need not
+preempt `p2` until the first of: an interrupt to `c2`, `p2`'s completion, or an
+event which causes `p2` to suspend.
+
+#### Default Behavior
+
+All processes should default to `SCHED_RR` with a priority of 0
+
+## Part 1 Extra Credit (moderate) -- Custom Scheduling Algorithm and Evaluation 
+
+##### Gathering Statistics
+
+In order to evaluate the performance of your scheduling algorithm, you will need to 
+implement a mechanism for gathering scheduling statistics for your implementation.
+For the purpose of measuring timing, take a look at allocproc(), sleep(), yield(), and schedule(), 
+all of which are boundries which you may need to measure a given statistic. 
+
+To help you get started, below is provided a reference statistics struct that will be placed per process.
+You may add intermediary values as needed in order to properly calculate these statistics. 
+
+```
+struct schedinfo 
+{
+  uint creation_time;  // time when the process was created
+  uint exit_time;      // time when the process exited
+  uint wait_time;      // time spent waiting in ready queue
+  uint execution_time; // time spend executing on a cpu
+  uint io_time;        // time spend waiting for and executing in I/O 
+};
+```
+
+In order to display these statistics, there are two suggested impelementations:
+
+- Suggestion 1: Print statistics during exit. Upon the exit of a process, 
+you can print out these statistics to the terminal and parse
+them later to process them.
+- Suggestion 2: Implement a new system call that will have the same functionality
+as wait/waitpid, however this system call will be able to write to a schedinfo* that 
+is passed in to dump the statistics out for the process.
+
+
+##### Custom Scheduling Algorithm
+
+This is the open-ended portion of the assignment. Feel free to implement any scheduling algorithm, 
+which you have learnt in class, or ever do your own research on. We will place a few suggestions below
+of potential algorithms you may want to implement. Remember, XV6 is running on multiple processors, and the 
+current implementation has all the cores reading from a shared process queue, so you may be interested in 
+looking at multiprocessor scheduling algorithms to take advantage of the multiple cores.
+
+- Linux Completely Fair Scheduler
+- Multilevel Queue Scheduling
+- Multi-Queue Multiprocessor Scheduing (Per-processor Queue)
+- Cache Affinity Scheduling
+
+##### Performance Evaluation and Writeup
+
+
+## Part 2 (hard) -- Threading
 
 What is a thread, and how do we build it?  Like a process, a thread represents
 an independent execution context (all processes execute independently), however,
@@ -126,7 +313,7 @@ Behavior:
 - If a thread finishes before its children, the behavior of those children
   (threads spawned by this thread) is undefined.
 
-## Part 2 (moderate) -- Beginnings of a userspace threading library
+## Part 3 (moderate) -- Beginnings of a userspace threading library
 
 We now have sufficient support from the kernel to start building a userspace
 threading library.
@@ -178,7 +365,7 @@ code for it can be found in `user/asm/free_stack_and_exit.S`)**
 - Since `thread_wait` takes in a pid, users can pass in the pid of the process
   itself (and not that of a thread created by it). This is fine.
 
-## Part 3 (easy) -- Userspace spinlocks
+## Part 4 (easy) -- Userspace spinlocks
 
 Now you will extend your userspace library by implementing spinlocks.
 
@@ -229,7 +416,7 @@ to the userspace implementation of xv6. You can find the corresponding header
 file at `user/include/atomics.h` (which you can subsequently include using
 `#include "atomics.h"` in userspace). 
 
-## Part 4 (hard) -- Userspace mutexes
+## Part 5 (hard) -- Userspace mutexes
 
 With spinlocks you can now write multi-threaded code that protects its critical
 sections.  Spinlocks, however, can be inefficient if the lock is heavily
@@ -329,11 +516,14 @@ int mutex_release(struct mutex *m);
 
 - `setpark(void *chan)` doesn't put the process to sleep. It only informs the
   kernel that the process is _about to go to sleep_ in the near future. You
-  will need this to solve the "lost wakeup" problem
+  will need this to solve the "lost wakeup" problem. Additionally, there is no
+  guarantee that setpark is called, it could happen that a used does not decide
+  to use setpark and rather just uses park and unpark, meaning that you must not
+  rely on setpark being called.
 - `unpark(void *chan)` doesn't specify which process to wake up. We leave this
   choice to you.
 
-## Part 5 (easy) -- Userspace conditional variables
+## Part 6 (easy) -- Userspace conditional variables
 
 While spinlock and mutex synchronization work well, sometimes we need a
 synchronization pattern similar to a producer-consumer queue. Instead of
@@ -404,10 +594,6 @@ Lastly, we encourage you to have fun while implementing it. It may seem daunting
 at first, but know full-well that you have all that you need to do well in this
 lab. Make good use of lectures, Piazza, and office hours: we're there to help.
 
-## Leaderboard
-
-We are working on setting this up. Stay tuned!
-
 ## Autograder
 
 As usual, you will submit this lab to the autograder. The testcases are shown below:
@@ -440,7 +626,9 @@ On Gradescope you will find two assignments:
 - Lab 3 - Checkpoint 1
 - Lab 3 - Checkpoint 2
 
-Your final Lab 3 score is equal to the score you get for checkpoint 2 (autograded + hand-graded). This means that you can continue working on checkpoint 1 after the due date. If you are able to pass all the autograder tests for checkpoint 1 by the due date, **five bonus points** will be added to your final Lab 3 score.
+Your final Lab 3 score is equal to the score you get for checkpoint 2 (autograded + hand-graded). 
+This means that you can continue working on checkpoint 1 after the due date. If you are able to pass 
+all the autograder tests for checkpoint 1 by the due date, **five bonus points** will be added to your final Lab 3 score.
 
 ## Hand Grading
 Similar to lab 2, there is a hand graded section of the lab. We will check for

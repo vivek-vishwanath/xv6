@@ -62,7 +62,7 @@ done
 
 
 
-SCRIPT="qemu-system-i386 ${GRAPHIC} -drive file=user/fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp ${CPUS} -m ${MEMORY} ${GDB}"
+SCRIPT="qemu-system-i386 ${GRAPHIC} -drive file=user/fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp cpus=${CPUS},cores=1,threads=1,sockets=${CPUS} -m ${MEMORY} ${GDB}"
 
 if [[ ${VERBOSE} ]]; then
   echo "COMMAND: ${SCRIPT}"

@@ -23,5 +23,9 @@ set(user_SOURCES
 
   # Common utility programs
   src/ls.c
+
+  # Benchmarks
+  src/benchmark/mmult.c
+  src/workload.c
   )
 

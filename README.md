@@ -174,12 +174,12 @@ All processes should default to `SCHED_RR` with a priority of 0
 
 ## Part 1 Extra Credit (moderate) -- Custom Scheduling Algorithm and Evaluation 
 
-If you have successfully implemented FIFO and RR, this is an opertunity to design your
-own scheduling algorithm, and evaluate its performance with respect to the prior algorithms. 
+If you have successfully implemented FIFO and RR, this is an opportunity to design your
+own scheduling algorithm, and evaluate its performance with respect to your prior algorithms. 
 
 ##### Custom Scheduling Algorithm
 
-This is the open-ended design portion of the assignment. Feel free to implement any scheduling algorithm, 
+This is the open-ended design portion of the assignment. Feel free to implement ANY scheduling algorithm, 
 which you have studied in class, or which you have done your own research on. 
 Below are a few suggestions of potential algorithms you may want to consider:
 - Linux Completely Fair Scheduler

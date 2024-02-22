@@ -4,14 +4,14 @@ The purpose of this lab is to introduce you to the concepts of
 scheduling and concurrency.  This lab consists primarily of two parts:  First,
 you will be extending xv6's scheduler to support multiple new schedulers.
 Second, you will be constructing a kernel-space threading library. 
-This lab also includes an extra-credit oppertunity that allows you to design your 
+This lab also includes an extra-credit opportunity that allows you to design your 
 own scheduling algorithm and benchmark its performance.
 
 This is a *large* lab, larger than the labs you've done so far, so be warned! 
 
 To help you stay organized, we have split it into two main checkpoints:
-- Checkpoint 1 (Parts 1)
-- Checkpoint 2 (Full lab)
+- Lab 3 - Checkpoint (Part 1)
+- Lab 3 (Full lab)
 
 To give a sense of how long it may take to complete each part, we've marked
 them with the following labels:
@@ -151,7 +151,7 @@ rules:
   (as specified in the scheduler specification).
 - When a new process becomes runnable, if it should run before the current
   process, your scheduler should immediately preempt the currently running process and
-  shcedule it (with one exception, in "Nit").
+  schedule it (with one exception, in "Nit").
 
 
 ##### Nit:
@@ -181,7 +181,7 @@ own scheduling algorithm, and evaluate its performance with respect to the prior
 
 This is the open-ended design portion of the assignment. Feel free to implement any scheduling algorithm, 
 which you have studied in class, or which you have done your own research on. 
-Below are a few suggestions of potential algorithms you may want to concider:
+Below are a few suggestions of potential algorithms you may want to consider:
 - Linux Completely Fair Scheduler
 - Multilevel Queue Scheduling
 - Multi-Queue Multiprocessor Scheduing (Per-processor Queue)
@@ -194,10 +194,10 @@ implement a mechanism for gathering scheduling statistics.
 For the purpose of measuring timing, take a look at `allocproc()`, `sleep()`, `yield()`, and `schedule()`, 
 all of which are boundries which you may need to measure a given statistic. 
 
-You must implement all of these measurments, though you may add intermediary values as necessary in 
+You must implement all of these measurements, though you may add intermediary values as necessary in 
 order to properly calculate these statistics. 
 
-The unit of measurement that you must use for these stastics is xv6 `ticks`. This is a global
+The unit of measurement that you must use for these statistics is xv6 `ticks`. This is a global
 counter in the kernel that is incremented for every time-quantum that has passed. 
 
 ```
@@ -227,7 +227,7 @@ Return:
   -1 on error, pid on success
 
 Behavior:
-  Same behaviour as wait with additional performance measurment features
+  Same behavior as wait with additional performance measurement features
 
 ```
 
@@ -236,7 +236,7 @@ Behavior:
 Now that you have implemented your own scheduler, you will need to evaluate its performance compared to 
 Round-Robin and FCFS. We have provided a benchmark that you are able to run in order to gather your data `workload`. 
 
-_Once you have `setscheduler` and `waitinfo` implemented, make sure to update the workload.c file to utalize these functions by uncommenting the respective code._
+_Once you have `setscheduler` and `waitinfo` implemented, make sure to update the `workload.c` file to utilize these functions by uncommenting the respective code._
 
 As discussed in class, a method for evaluating the performance of schedulers is to plot the 
 cumulative distribution of end-to-end latency (creation -> exit response time). Plot the latency
@@ -254,9 +254,10 @@ host device and the performance capabilities of the emulator.
 ##### Technical Writeup 
 
 As you have the freedom to implement any scheduling algorithm, you must explain your 
-design decisions and present your performance measurments. You must submit a ~1 page writeup detailing the implementation
+design decisions and present your performance measurements. You must submit a ~1 page writeup detailing the implementation
 of you scheduling algorithm, and analysing the performance results that were gathered. Include any relevant graphs
-and table that will be useful in your writeup.
+and table that will be useful in your writeup. Please name the file `report.pdf` and place it in the project root
+(double-check your `submission.zip` to ensure it is included when you submit).
 
 ## Part 2 (hard) -- Threading
 
@@ -638,26 +639,26 @@ lab. Make good use of lectures, Piazza, and office hours: we're there to help.
 
 As usual, you will submit this lab to the autograder. The testcases are shown below:
 
-- Scheduling Tests Pending
-  - Test X
+- Scheduling Tests
+  - Test 1-10
 - Clone Functionality
-  - Tests 1-5
+  - Tests 10-15
 - Clone error / security
-  - Tests 6-11
+  - Tests 16-21
 - Thread library general testing
-  - Tests 12-16
+  - Tests 22-26
 - Thread library error / security testing
-  - Tests 17-21
+  - Tests 27-31
 - Spinlock
-  - Test 22
+  - Test 32
 - Park, setpark, unpark
-  - Tests 23-25
+  - Tests 33-35
 - Mutex
-  - Test 26
+  - Test 36
 - Waitpid
-  - Test 27
+  - Test 37
 - Condvar
-  - Tests 28-31
+  - Tests 38-41
 
 **IMPORTANT**: Since this lab has a good deal of concurrency involved, you may
 be able to pass some tests without correctly implementing some of these
@@ -665,12 +666,12 @@ primitives. We will be looking over your submission when hand-grading, so
 please thoroughly test your implementation.
 
 On Gradescope you will find two assignments:
-- Lab 3 - Checkpoint 1
-- Lab 3 - Checkpoint 2
+- Lab 3 - Checkpoint
+- Lab 3
 
-Your final Lab 3 score is equal to the score you get for checkpoint 2 (autograded + hand-graded). 
-This means that you can continue working on checkpoint 1 after the due date. If you are able to pass 
-all the autograder tests for checkpoint 1 by the due date, **five bonus points** will be added to your final Lab 3 score.
+Your final Lab 3 score is equal to the score you get for the Lab 3 assignment (autograded + hand-graded). 
+This means that you can continue working on the checkpoint tests after the due date. If you are able to pass 
+all the autograder tests in the checkpoint by the due date, **five bonus points** will be added to your final Lab 3 score.
 
 ## Hand Grading
 Similar to lab 2, there is a hand graded section of the lab. We will check for

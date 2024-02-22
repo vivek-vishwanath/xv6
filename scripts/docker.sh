@@ -40,11 +40,11 @@ done
 
 if [[ $PULL == true ]]; then
     echo "Pulling latest image from DockerHub"
-    docker pull jackwolfard/cs3210:latest
+    docker pull cwebb45/cs3210:latest
 elif [[ $ATTACH == true ]]; then
     echo "Attaching to container"
     docker exec -it xv6 bash 
 else
     echo "Starting xv6 container"
-    docker run --rm -it --name="xv6" -v "${ROOT_DIR}/":/xv6 -w="/xv6" jackwolfard/cs3210:latest
+    docker run --rm -it --name="xv6" -v "${ROOT_DIR}/":/xv6 -w="/xv6" cwebb45/cs3210:latest
 fi

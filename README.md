@@ -4,13 +4,13 @@ The purpose of this lab is to introduce you to the concepts of
 scheduling and concurrency.  This lab consists primarily of two parts:  First,
 you will be extending xv6's scheduler to support multiple new schedulers.
 Second, you will be constructing a kernel-space threading library. 
-This lab also includes an extra-credit oppertunity that asks you to run performance 
-analysis and implement your own scheduling algorithm.
+This lab also includes an extra-credit oppertunity that allows you to design your 
+own scheduling algorithm and benchmark its performance.
 
 This is a *large* lab, larger than the labs you've done so far, so be warned! 
 
 To help you stay organized, we have split it into two main checkpoints:
-- Checkpoint 1 (Parts 1, 2, 3)
+- Checkpoint 1 (Parts 1)
 - Checkpoint 2 (Full lab)
 
 To give a sense of how long it may take to complete each part, we've marked
@@ -155,6 +155,9 @@ rules:
 
 
 ##### Nit:
+Do not temper with the APIC `TIMER` or `PERIODIC` as you will be modifying the 
+external timer which interrupts the CPU for scheduling decisions.
+
 If another process becomes a better candidate than the currently running process
 the kernel must immediately switch to running that process.
 
@@ -171,52 +174,89 @@ All processes should default to `SCHED_RR` with a priority of 0
 
 ## Part 1 Extra Credit (moderate) -- Custom Scheduling Algorithm and Evaluation 
 
-##### Gathering Statistics
-
-In order to evaluate the performance of your scheduling algorithm, you will need to 
-implement a mechanism for gathering scheduling statistics for your implementation.
-For the purpose of measuring timing, take a look at allocproc(), sleep(), yield(), and schedule(), 
-all of which are boundries which you may need to measure a given statistic. 
-
-To help you get started, below is provided a reference statistics struct that will be placed per process.
-You may add intermediary values as needed in order to properly calculate these statistics. 
-
-```
-struct schedinfo 
-{
-  uint creation_time;  // time when the process was created
-  uint exit_time;      // time when the process exited
-  uint wait_time;      // time spent waiting in ready queue
-  uint execution_time; // time spend executing on a cpu
-  uint io_time;        // time spend waiting for and executing in I/O 
-};
-```
-
-In order to display these statistics, there are two suggested impelementations:
-
-- Suggestion 1: Print statistics during exit. Upon the exit of a process, 
-you can print out these statistics to the terminal and parse
-them later to process them.
-- Suggestion 2: Implement a new system call that will have the same functionality
-as wait/waitpid, however this system call will be able to write to a schedinfo* that 
-is passed in to dump the statistics out for the process.
-
+If you have successfully implemented FIFO and RR, this is an opertunity to design your
+own scheduling algorithm, and evaluate its performance with respect to the prior algorithms. 
 
 ##### Custom Scheduling Algorithm
 
-This is the open-ended portion of the assignment. Feel free to implement any scheduling algorithm, 
-which you have learnt in class, or ever do your own research on. We will place a few suggestions below
-of potential algorithms you may want to implement. Remember, XV6 is running on multiple processors, and the 
-current implementation has all the cores reading from a shared process queue, so you may be interested in 
-looking at multiprocessor scheduling algorithms to take advantage of the multiple cores.
-
+This is the open-ended design portion of the assignment. Feel free to implement any scheduling algorithm, 
+which you have studied in class, or which you have done your own research on. 
+Below are a few suggestions of potential algorithms you may want to concider:
 - Linux Completely Fair Scheduler
 - Multilevel Queue Scheduling
 - Multi-Queue Multiprocessor Scheduing (Per-processor Queue)
 - Cache Affinity Scheduling
 
-##### Performance Evaluation and Writeup
+##### Gathering Statistics
 
+In order to evaluate the performance of your scheduling algorithm, you will need to 
+implement a mechanism for gathering scheduling statistics.
+For the purpose of measuring timing, take a look at `allocproc()`, `sleep()`, `yield()`, and `schedule()`, 
+all of which are boundries which you may need to measure a given statistic. 
+
+You must implement all of these measurments, though you may add intermediary values as necessary in 
+order to properly calculate these statistics. 
+
+The unit of measurement that you must use for these stastics is xv6 `ticks`. This is a global
+counter in the kernel that is incremented for every time-quantum that has passed. 
+
+```
+/* include/sched.h */
+struct schedinfo 
+{
+  uint creation_time;  // ticks when the process was created
+  uint exit_time;      // ticks when the process exited
+  uint response_time;  // ticks from creation to exit (user-centric measure)
+  uint execution_time; // ticks spent executing on a cpu
+  uint wait_time;      // ticks spent waiting in ready queue
+  uint io_time;        // ticks spent waiting for and executing in I/O 
+};
+```
+
+In order to retrieve these statistics from user-space, you will need to implement
+a specialized wait system-call that will take in a pointer a user `schedinfo struct`, and will 
+fill these information when the process exists.
+
+```
+int waitinfo(struct schedinfo *info)
+
+Arguments:
+  info -- pointer to a struct schedinfo that will be filled in with the correspoinding processes statistics
+
+Return:
+  -1 on error, pid on success
+
+Behavior:
+  Same behaviour as wait with additional performance measurment features
+
+```
+
+##### Performance Evaluation
+
+Now that you have implemented your own scheduler, you will need to evaluate its performance compared to 
+Round-Robin and FCFS. We have provided a benchmark that you are able to run in order to gather your data `workload`. 
+
+_Once you have `setscheduler` and `waitinfo` implemented, make sure to update the workload.c file to utalize these functions by uncommenting the respective code._
+
+As discussed in class, a method for evaluating the performance of schedulers is to plot the 
+cumulative distribution of end-to-end latency (creation -> exit response time). Plot the latency
+on a cdf curve and note the P50, P95 and P99 scores. Feel free to draw additional graphs to represent your data
+in a visualizable format, in addition to your latency cdf.
+
+Below is an example of a cdf that was gathered of FCFS, Round-Robin and an additonal improved scheduler running the xv6 workload on 4 CPUs:
+
+![latency cdf](images/latency_cdf.png)
+
+A note on the statistics gathered, since we are running xv6 on top of an emulator
+such as qemu rather than on bare-metal, results may strongly vary depending on
+host device and the performance capabilities of the emulator. 
+
+##### Technical Writeup 
+
+As you have the freedom to implement any scheduling algorithm, you must explain your 
+design decisions and present your performance measurments. You must submit a ~1 page writeup detailing the implementation
+of you scheduling algorithm, and analysing the performance results that were gathered. Include any relevant graphs
+and table that will be useful in your writeup.
 
 ## Part 2 (hard) -- Threading
 
@@ -598,6 +638,8 @@ lab. Make good use of lectures, Piazza, and office hours: we're there to help.
 
 As usual, you will submit this lab to the autograder. The testcases are shown below:
 
+- Scheduling Tests Pending
+  - Test X
 - Clone Functionality
   - Tests 1-5
 - Clone error / security

@@ -10,7 +10,7 @@ own scheduling algorithm and benchmark its performance.
 This is a *large* lab, larger than the labs you've done so far, so be warned! 
 
 To help you stay organized, we have split it into two main checkpoints:
-- Lab 3 - Checkpoint (Part 1)
+- Lab 3 - Checkpoint (Part 1 + Part 2)
 - Lab 3 (Full lab)
 
 To give a sense of how long it may take to complete each part, we've marked

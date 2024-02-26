@@ -666,12 +666,12 @@ primitives. We will be looking over your submission when hand-grading, so
 please thoroughly test your implementation.
 
 On Gradescope you will find two assignments:
-- Lab 3 - Checkpoint
-- Lab 3
+- Lab 3 - Checkpoint (Tests 1-21)
+- Lab 3 (All tests)
 
 Your final Lab 3 score is equal to the score you get for the Lab 3 assignment (autograded + hand-graded). 
 This means that you can continue working on the checkpoint tests after the due date. If you are able to pass 
-all the autograder tests in the checkpoint by the due date, **five bonus points** will be added to your final Lab 3 score.
+all the autograder tests in the checkpoint by the due date, ~~five~~ **ten bonus points** will be added to your final Lab 3 score.
 
 ## Hand Grading
 Similar to lab 2, there is a hand graded section of the lab. We will check for

@@ -300,14 +300,14 @@ This function is used in the syscall ```report_stats``` which will then be used 
 We would now like to support file sizes upto 8MB (1MB = $2^{20}$ bytes). To do so, you must identify the following:
 
 1. How is the limit of the file system size specified in xv6? 
-2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? 
+2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? **Contraint**: The *size* of this structure **must not change**. 
 3. What functionality must be changed to ensure that more disk space can be taken up by a file than currently possible? (Hint: identify how space on disk is allocated/reclaimed)
 
-### Design Choices
+<!-- ### Design Choices
 
 Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. To emphasize the importance of this design choice, we have provided two rudimentary workloads, ```workload1.c``` and ```workload2.c```. Further, we have provided the syscall ```report_stats``` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes, for which the relevant functionality is defined in ```lab4_ag.c``` and other FS-related kernel source files. The syscall makes use of the struct ```disk_stat``` defined in ```stat.h```. For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs. 
 
-Your writeup will be graded as part of handgrading based on the correctness of the observations, and the pros and cons of each design. 
+Your writeup will be graded as part of handgrading based on the correctness of the observations, and the pros and cons of each design.  -->
 
 ## Bonus -- sudo Utility
 

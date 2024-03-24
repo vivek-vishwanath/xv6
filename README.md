@@ -1,4 +1,5 @@
-# Lab 4 -- User-Isolation and File Permissions
+<!-- Added -->
+# Lab 4 -- User-Isolation, File Permissions and Large File Support
 
 The purpose of this lab is to have you explore how the kernel can enable
 user-space applications to build their own isolation and login systems through
@@ -272,6 +273,41 @@ be created by manual entry.
 lowered to its uid
 - Changes made in the `xv6-qemu` file system will not persist to
 `login-xv6-qemu` and vice versa since they use different file system images.
+
+<!-- Added -->
+## Part 4 -- Large File Support
+
+Currently, the file system in xv6 is designed such that the maximum file size is only 140 sectors/blocks (in xv6, the size of a block and disk sector coincide). What if we want to store a large file, e.g., an image? In this part of the lab, you will be adding support for much larger file sizes. 
+
+### ```df``` command
+
+<!-- TODO: Replace with correct name and syscall -->
+To facilitate the tests for this part of the lab, you will first develop a simplified version of a fundamental Unix command: [df](https://linuxcommand.org/lc3_man_pages/df1.html). For this, you must implement the function ```get_free_blocks``` as described below:
+
+```c
+/**
+ * Report the number of free blocks on the disk
+ * 
+ * @return number of free blocks (integer)
+ */
+int get_free_blocks();
+```
+
+This function is used in the syscall ```report_stats``` which will then be used to effectively test an equivalent of the ```df``` command. **Do not modify** the ```report_stats``` function. 
+
+### File System Changes
+
+We would now like to support file sizes upto 8MB (1MB = $2^{20}$ bytes). To do so, you must identify the following:
+
+1. How is the limit of the file system size specified in xv6? 
+2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? 
+3. What functionality must be changed to ensure that more disk space can be taken up by a file than currently possible? (Hint: identify how space on disk is allocated/reclaimed)
+
+### Design Choices
+
+Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. To emphasize the importance of this design choice, we have provided two rudimentary workloads, ```workload1.c``` and ```workload2.c```. Further, we have provided the syscall ```report_stats``` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes, for which the relevant functionality is defined in ```lab4_ag.c``` and other FS-related kernel source files. The syscall makes use of the struct ```disk_stat``` defined in ```stat.h```. For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs. 
+
+Your writeup will be graded as part of handgrading based on the correctness of the observations, and the pros and cons of each design. 
 
 ## Bonus -- sudo Utility
 

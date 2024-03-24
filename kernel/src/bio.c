@@ -25,6 +25,9 @@
 #include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
+#include "lab4_ag.h"
+
+extern struct superblock sb; 
 
 struct {
   struct spinlock lock;
@@ -101,6 +104,10 @@ bread(uint dev, uint blockno)
   b = bget(dev, blockno);
   if((b->flags & B_VALID) == 0) {
     iderw(b);
+    if ((b->blockno >= sb.inodestart) && (b->blockno < sb.bmapstart))
+      report_disk_inode_read();
+    else if (b->blockno >= (sb.size - sb.nblocks))
+      report_disk_data_read();
   }
   return b;
 }
@@ -113,6 +120,10 @@ bwrite(struct buf *b)
     panic("bwrite");
   b->flags |= B_DIRTY;
   iderw(b);
+  if ((b->blockno >= sb.inodestart) && (b->blockno < sb.bmapstart))
+    report_disk_inode_write();
+  else if (b->blockno >= (sb.size - sb.nblocks))
+    report_disk_data_write();
 }
 
 // Release a locked buffer.
@@ -141,4 +152,5 @@ brelse(struct buf *b)
 }
 //PAGEBREAK!
 // Blank page.
+
 

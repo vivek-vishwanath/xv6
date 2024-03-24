@@ -13,4 +13,12 @@ struct stat {
   uint size;   // Size of file in bytes
 };
 
+struct disk_stat {
+  int disk_data_read_count;
+  int disk_data_write_count;
+  int disk_inode_read_count;
+  int disk_inode_write_count;  
+  int free_blocks;
+};
+
 #endif  // INCLUDE_STAT_h_

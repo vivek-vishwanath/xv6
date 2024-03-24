@@ -24,3 +24,4 @@
 #define SYS_chmod  23
 #define SYS_chown  24
 #define SYS_getuid 25
+#define SYS_report_stats 26

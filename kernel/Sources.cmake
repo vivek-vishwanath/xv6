@@ -19,6 +19,7 @@ set(kernel_SOURCES
 	src/ioapic.c
 	src/kalloc.c
 	src/kbd.c
+	src/lab4_ag.c
 	src/lapic.c
 	src/log.c
 	src/main.c

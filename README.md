@@ -279,10 +279,10 @@ lowered to its uid
 
 Currently, the file system in xv6 is designed such that the maximum file size is only 140 sectors/blocks (in xv6, the size of a block and disk sector coincide). What if we want to store a large file, e.g., an image? In this part of the lab, you will be adding support for much larger file sizes. 
 
-### ```df``` command
+### Free Blocks on Disk
 
 <!-- TODO: Replace with correct name and syscall -->
-To facilitate the tests for this part of the lab, you will first develop a simplified version of a fundamental Unix command: [df](https://linuxcommand.org/lc3_man_pages/df1.html). For this, you must implement the function ```get_free_blocks``` as described below:
+To facilitate the tests for this part of the lab, you will first develop a simple reporting tool to check the number of free sectors on disk. For this, you must implement the function ```get_free_blocks``` as described below:
 
 ```c
 /**
@@ -293,7 +293,7 @@ To facilitate the tests for this part of the lab, you will first develop a simpl
 int get_free_blocks();
 ```
 
-This function is used in the syscall ```report_stats``` which will then be used to effectively test an equivalent of the ```df``` command. **Do not modify** the ```report_stats``` function. 
+You will only need to implement this function, which will then be used in the syscall ```report_stats```, used for testing correctness. **Do not modify** the ```report_stats``` function. 
 
 ### File System Changes
 
@@ -303,11 +303,11 @@ We would now like to support file sizes upto 8MB (1MB = $2^{20}$ bytes). To do s
 2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? **Contraint**: The *size* of this structure **must not change**. 
 3. What functionality must be changed to ensure that more disk space can be taken up by a file than currently possible? (Hint: identify how space on disk is allocated/reclaimed)
 
-<!-- ### Design Choices
+### Design Choices
 
-Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. To emphasize the importance of this design choice, we have provided two rudimentary workloads, ```workload1.c``` and ```workload2.c```. Further, we have provided the syscall ```report_stats``` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes, for which the relevant functionality is defined in ```lab4_ag.c``` and other FS-related kernel source files. The syscall makes use of the struct ```disk_stat``` defined in ```stat.h```. For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs. 
+Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. We have provided the syscall ```report_stats``` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes at any point in the system, for which the relevant functionality is defined in ```lab4_ag.c``` and other FS-related kernel source files. The syscall makes use of the struct ```disk_stat``` defined in ```stat.h```. This information will be used to autograde the design choice made; the design choice should not result in a significantly high number of disk I/Os. 
 
-Your writeup will be graded as part of handgrading based on the correctness of the observations, and the pros and cons of each design.  -->
+<!-- For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs.  -->
 
 ## Bonus -- sudo Utility
 
@@ -347,6 +347,7 @@ autograder are categorized in the following manner:
 - User: 1 - 4
 - Filesystem: 5 - 17
 - Login: 18 - 27
+- Large File Support: 32 - 37
 
 When submitting utilize the provided `scripts/submit.sh`. If you do not have
 Python 3.7+ on your local machine, run this script in the Docker container.

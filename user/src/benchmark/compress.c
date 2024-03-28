@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 
 	int original_size = st.size;
 	char *original_file = malloc(original_size);
-	char *compressed_file = malloc(original_size);
+	char *compressed_file = malloc(original_size * 2);
 	char *decompressed_file = malloc(original_size);
 	char *buffer = malloc(BUFFER_SIZE);
 

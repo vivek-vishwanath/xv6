@@ -4,8 +4,8 @@
 The purpose of this lab is to have you explore how the kernel can enable
 user-space applications to build their own isolation and login systems through
 simple, minimal, low-level kernel interfaces. To accomplish this you will
-create a simple (but realistic) user system, a file permission system, and a
-a user-space login system.
+create a simple (but realistic) user system, a file permission system, a
+a user-space login system, and add support for large files.
 
 We have provided primitive cryptographic tools for hashing and encrypting data.
 The expectation is for you to utilize these tools when building your login
@@ -189,8 +189,12 @@ user-space cryptographic tools for hashing (`sha256`) and encrypting
 Your key contributions will be decision making in the design and implementation
 of a secure mechanism for storing and retrieving passwords in xv6. Please refer
 to content discussed in the security lectures as well as resources online
-regarding Linux's own password system for inspiration. The autograder will be
-testing for correctness of your implementation being able to facilitate login.
+regarding Linux's own password system for inspiration. The autograder will be 
+testing for correctness of your implementation being able to facilitate login, 
+but emphasis will be put on handgrading to check for secureness of your design. 
+Please include `login_design.md` in your final submission which describes what 
+mechanisms you utilized to secure your system, which files are created in the 
+process, and what the content of those files mean.
 
 Instead of launching xv6 by using `xv6-qemu`, we have provided an alternative
 script `login-xv6-qemu` which relies on `user/src/login/login_init.c` and
@@ -309,36 +313,6 @@ Inherent to this part of the lab is a fundamental design choice which will accor
 
 <!-- For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs.  -->
 
-## Bonus -- sudo Utility
-
-As you probably know, the `sudo` command is a powerful utility in Unix-like 
-operating systems that allows a permitted user to execute a command as the 
-superuser or another user, as specified by a security policy. For an additional
-**10 points** on this lab, you can implement a simple `sudo` utility for xv6.
-Your implementation will involve creating a secure way to authenticate a user
-and then execute a command with root privileges. 
-
-Now that you are familiar with xv6, this task is more open-ended than the 
-previous tasks. How you implement privilege escalation is up to you, but its
-security will be evaluated as a part of handgrading.
-
-Write a new user-space program, `sudo.c`, that will authenticate the user and
-execute a given command with root privileges if the correct root password is
-provided. If the user is already root, no password is required. If the user
-inputs the wrong password, print `Authentication failed`.
-
-```
-# Example usage of sudo for non-root user
-$ sudo mkdir foo
-correctpass123
-# (foo was successfully created)
-$ sudo mkdir bar
-wrongpass321
-Authentication failed
-# (bar was not created)
-$
-```
-
 ## Autograder
 
 As usual, you will submit this lab to the autograder. The tests in the
@@ -347,7 +321,7 @@ autograder are categorized in the following manner:
 - User: 1 - 4
 - Filesystem: 5 - 17
 - Login: 18 - 27
-- Large File Support: 32 - 37
+- Large File Support: 28 - 32
 
 When submitting utilize the provided `scripts/submit.sh`. If you do not have
 Python 3.7+ on your local machine, run this script in the Docker container.
@@ -357,32 +331,7 @@ Python 3.7+ on your local machine, run this script in the Docker container.
 Even though these are categorizations of the tests, you can assume subsequent
 parts can rely on elements from previous parts as was the case in previous labs.
 
-## Write-Up
-
-To better demonstrate contributions toward the completion of Lab 4, students
-working with a partner are required to submit a write-up documenting the
-design and implementation of Parts 1, 2, 3 and Bonus (if completed).
-The write-up should include an overview of modifications made to xv6 to satisfy
-the requirements of each part, any interesting design decisions you made to
-achieve functionality, and the contributions you made to the project. The
-write-up does not have a minimum length requirement, but should be substantive
-enough to demonstrate your understanding of what was accomplished in Lab 4. An
-acceptable write-up will typically have at least 1 long paragraph for each part
-that describes your work on and understanding of those parts.
-
-Note that each student in a 2-person team must submit a separate write-up. This
-write-up must be original to each student (i.e., both partners may not submit 
-the same write-up).
-
-Students who work solo (i.e., without a partner) are not required to complete a
-write-up, but may include one to help us better understand your submission
-during grading.
-
 ## Hand Grading
 
 Lab 4 also includes a hand-grading portion. Hand-grading for Lab 4 will check
-for code/implementation correctness and will involve a review of the write-ups
-for each partner in a 2-partner group. Write-ups will be weighed individually
-per student, such that two partners may receive different scores on the
-hand-grading portion of Lab 4 if they did not contribute equally to the
-assignment.
+for code/implementation correctness and will involve a review of `login_design.md`.

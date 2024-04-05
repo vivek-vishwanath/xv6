@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct disk_stat;
 
 // system calls
 int fork(void);

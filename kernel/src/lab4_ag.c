@@ -5,7 +5,7 @@ static int disk_data_read_count = 0;
 static int disk_data_write_count = 0;
 static int disk_inode_read_count = 0;
 static int disk_inode_write_count = 0;
-static int free_blocks = 0;
+//static int free_blocks = 0;
 
 void report_disk_data_read(){
     disk_data_read_count++;

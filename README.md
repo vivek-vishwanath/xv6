@@ -20,7 +20,7 @@ The xv6 repository we're using for this course is available on Georgia Tech's
 GitHub:
 
 ```bash
-git clone git@github.gatech.edu:cs3210-spring2024/xv6.git
+git clone https://github.gatech.edu/cs3210-fall2024/xv6.git
 ```
 
 For this lab, we will be using the lab1 branch within git. You may switch to it
@@ -77,9 +77,9 @@ CTRL-a, x.
 Our xv6 kernel is an OS kernel, its made to run on bare-hardware. However,
 launching it on your PC seems like a bad idea, as it would overwrite your
 existing OS. Instead, we want to run it in a virtual environment that's much
-more friendly for testing.  We could use a classic virtual machine (VM)
+more friendly for testing. We could use a classic virtual machine (VM)
 solution (e.g. VMWare or VirtualBox), but those are pretty heavy-weight, take a
-long time to launch, and are hard to configure.  Instead, we use qemu, a machine
+long time to launch, and are hard to configure. Instead, we use qemu, a machine
 emulator. Qemu emulates a cpu, causing it to look to the program running inside
 of it like it has its own raw x86 CPU. This is slow, and you may notice that xv6
 actually runs really slowly in qemu, but its much more convenient for debugging,
@@ -107,7 +107,7 @@ more in Part 3.
 ### The Specification
 
 For part 2 of the lab, you will be modifying the xv6 kernel to add stack-trace
-support through a function named `backtrace`.  Backtrace has the following
+support through a function named `backtrace`. Backtrace has the following
 specification:
 
 ```c
@@ -386,7 +386,7 @@ feel free to take a look at it. However, we wont cover it in too much detail her
 ### The Assignment
 
 Currently, the kernel assumes it has `PHYSTOP` memory (defined in
-`include/memlayout.h` as `0xE000000`).  This is a static memory assumption, so
+`include/memlayout.h` as `0xE000000`). This is a static memory assumption, so
 regardless of what the attached machine has, the kernel will use exactly
 `PHYSTOP` bytes of RAM. This could be an issue in two ways, (1) the machine has
 less than `PHYSTOP` memory, and the kernel assumes it has memory that doesn't
@@ -483,10 +483,10 @@ completing this exercise.
 ## Grading
 
 As with all labs in this course, the lab has an associated autograder on
-Gradescope. The policies and rules of the autograder may be found in the 
+Gradescope. The policies and rules of the autograder may be found in the
 [autograder manual][autograder-manual]. You will submit your code to the autograder for
 autograding. There will also be a hand graded portion of this lab, worth 15%
-of your lab grade. Finally, this is our only *individual* lab, you cannot
+of your lab grade. Finally, this is our only _individual_ lab, you cannot
 collaborate or share code with others (although discussion is allowed). Your
 code will be checked for cheating, and any detection of shared code, or pulling
 code from the internet will be harshly punished.
@@ -495,8 +495,9 @@ To submit, run `scripts/submit.sh` and upload the generated `submission.zip`
 file to [Gradescope][gradescope].
 
 Test breakdown:
-* Tests 1-3: Part 1
-* Tests 4-7: Part 2
+
+- Tests 1-3: Part 1
+- Tests 4-7: Part 2
 
 **NOTE:** Any unauthorized attempt to subvert or attack the autograder will be
 considered a violation of academic integrity and will be punished. The
@@ -535,6 +536,6 @@ of the following projects (no credit given, just fun experiments):
 [bios]: https://github.com/qemu/qemu/tree/master/pc-bios
 [grub]: https://www.gnu.org/software/grub/
 [e820]: https://wiki.osdev.org/Detecting_Memory_(x86)#BIOS_Function:_INT_0x15.2C_EAX_.3D_0xE820
-[private-fork]: https://github.gatech.edu/pages/cs3210-spring2024/course//wiki/private-fork/
-[autograder-manual]: https://github.gatech.edu/pages/cs3210-spring2024/course//wiki/autograder/ 
-[gradescope]: https://www.gradescope.com/courses/699141
+[private-fork]: https://cs3210-fall2024.anand-iyer.com/wiki/labs/forking/
+[autograder-manual]: https://cs3210-fall2024.anand-iyer.com/wiki/labs/autograder/
+[gradescope]: https://www.gradescope.com/courses/820881

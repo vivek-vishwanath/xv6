@@ -26,7 +26,7 @@ The xv6 repository we're using for this course is available on Georgia Tech's
 GitHub:
 
 ```bash
-git clone git@github.gatech.edu:cs3210-spring2024/xv6.git
+git clone https://github.gatech.edu/cs3210-fall2024/xv6.git
 ```
 
 For this lab, we will be using the lab1 branch within git. You may switch to it
@@ -71,15 +71,15 @@ In this lab, you will build those two optimizations, as specified below.
 ## High-Level Notes
 
 This lab is strictly about optimization. You will not be adding any new
-user-facing functionality. In fact, for this lab you are *required* to maintain
+user-facing functionality. In fact, for this lab you are _required_ to maintain
 binary compatibility with the baseline xv6 kernel provided to you. That is, any
 binary that could run on the original xv6 must be able to run unmodified on new
 xv6 kernel.
 
 This lab is intended to test and develop your knowledge of lazy allocation. As
 a guiding principle, you should aim to **reduce the overall costs of virtual
-memory management**. This means you should aim to *minimize unneeded page
-copies and page zeros*, and *minimize interrupts*. Note, that page copies
+memory management**. This means you should aim to _minimize unneeded page
+copies and page zeros_, and _minimize interrupts_. Note, that page copies
 cost more than page-zeros, and cost an order-of-magnitude more than an
 interrupt. Given the option, you should prefer a page zero to a page copy, and
 an interrupt to either. You should also minimize interrupts, as an interrupt on
@@ -127,8 +127,8 @@ first. When you receive a trap (e.g. a pagefault) the trap will be delivered
 through the kernel, eventually to our c trap handler in `trap()`
 (`kernel/src/trap.c`).
 
-Think carefully about your design before you build it.  What structures need
-what metadata? What's the best way to store and organize that metadata?  What
+Think carefully about your design before you build it. What structures need
+what metadata? What's the best way to store and organize that metadata? What
 is the ownership of a physical page? Of a virtual page?
 
 - You can find a somewhat in-depth explanation of the xv6 paging structure in
@@ -259,7 +259,7 @@ the prints created by these functions can sometimes make it hard to tell what
 the behavior of the test is, so we provided a `noprint` version which will not
 add any additional prints. You may select which version you would like to use
 for testing (we recommend using both!). The autograder will test with both.
-You are *not* allowed to change the supplied `kernel/src/lab2_ag.c`,
+You are _not_ allowed to change the supplied `kernel/src/lab2_ag.c`,
 `kernel/src/lab2_ag_noprint.c`, or `kernel/include/lab2_ag.h` files.
 
 **NOTES:**
@@ -280,10 +280,10 @@ The directory contains:
   build it (a fs image that your kernel can use is provided)
 - forktest.asm -- the .asm file for the compiled version of forktest.c
 - init.asm -- the .asm file for the `init` process on the filesystem
-- forktest\_fs.img -- the filesystem image that forktest-xv6-qemu will run.
+- forktest_fs.img -- the filesystem image that forktest-xv6-qemu will run.
 - forktest_expected_cow.out -- the expected output of a project with working
   copy-on-write functionality but no shared zero-initialized page when running forktest.img
-- forktest\_expected_complete.out -- the expected output of a correct,
+- forktest_expected_complete.out -- the expected output of a correct,
   finshed project when running forktest.img
 
 You may run this test after make using `./forktest-xv6-qemu` and compare your
@@ -320,10 +320,12 @@ autograder logs all submissions both in Gradescope and remotely, so any
 submission may be audited.
 
 ## Hand Grading
+
 A portion of the lab will be hand graded. This is separate from the autograder
 results. For this lab, handgrading will include but is not limited to:
+
 - Ensuring mutal exclusion in newly created kernel data structures (remember,
-  xv6 can be run on multiple CPUs, so acesses to shared data structures must 
+  xv6 can be run on multiple CPUs, so acesses to shared data structures must
   be treated as critical sections)
 - Checking for attempts to attempts to subvert the autograder
 - Detecting violations of student honor code
@@ -337,4 +339,4 @@ You may choose to work with a partner. When sharing code with your partner, use 
 [git]: https://www.git-scm.com
 [git-manual]: https://www.kernel.org/pub/software/scm/git/docs/user-manual.html
 [git-article]: https://eagain.net/articles/git-for-computer-scientists/
-[private-fork]: https://github.gatech.edu/pages/cs3210-spring2024/course/wiki/private-fork/
+[private-fork]: https://cs3210-fall2024.anand-iyer.com/wiki/labs/forking/

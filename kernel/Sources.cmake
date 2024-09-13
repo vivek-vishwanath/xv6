@@ -10,6 +10,7 @@ set(kernel_SOURCES
   gen/vectors.S
 
   # C Files
+		src/backtrace.c
   src/bio.c
 	src/console.c
 	src/exec.c

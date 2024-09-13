@@ -129,7 +129,9 @@ setupkvm()
   if((pgdir = (pde_t*)kalloc()) == 0)
     return 0;
   memset(pgdir, 0, PGSIZE);
-  if (P2V(kmap[2].phys_end) > (void*)DEVSPACE)
+  void *ptr = P2V(kmap[2].phys_end);
+  uint devspace = DEVSPACE;
+  if (ptr > (void*)devspace)
   {
     panic("PHYSTOP too high");
   }

@@ -15,14 +15,38 @@ static void mpmain(void)  __attribute__((noreturn));
 extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
 
+static uint
+calculate_phystop(void) {
+  int *records = (int *) 0x80000500;
+  uint phystop = 0;
+  for (int i = 0; i < *records; i++) {
+    uint start = records[1 + 6 * i];
+    uint length = records[3 + 6 * i];
+    int type = records[5 + 6 * i];
+    if (type != 1) continue;
+    int end = start + length;
+    uint dev = V2P(DEVSPACE);
+    uint kernb = V2P(KERNBASE);
+    if (end > phystop && end >= kernb) {
+      if (end < dev)
+      	phystop = end;
+      else
+        phystop = dev - 1;
+    }
+  }
+  return phystop;
+}
+
+
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.
 int
 main(void)
 {
+  uint true_phystop = calculate_phystop();
   kinit1(end, P2V(4*1024*1024)); // phys page allocator
-  kvmalloc(PHYSTOP); // kernel page table
+  kvmalloc(true_phystop); // kernel page table
   mpinit();        // detect other processors
   lapicinit();     // interrupt controller
   seginit();       // segment descriptors
@@ -36,7 +60,7 @@ main(void)
   fileinit();      // file table
   ideinit();       // disk 
   startothers();   // start other processors
-  kinit2(P2V(4*1024*1024), P2V(PHYSTOP), PHYSTOP); // must come after startothers()
+  kinit2(P2V(4*1024*1024), P2V(true_phystop), true_phystop); // must come after startothers()
   userinit();      // first user process
   mpmain();        // finish this processor's setup
 }

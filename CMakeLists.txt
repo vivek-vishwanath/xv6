@@ -45,9 +45,12 @@ add_custom_command(
 
 # Copy the run script
 configure_file(${CMAKE_SOURCE_DIR}/scripts/xv6-qemu ${CMAKE_CURRENT_BINARY_DIR}/xv6-qemu COPYONLY)
+# Copy the gdb script
 configure_file(${CMAKE_SOURCE_DIR}/scripts/gdbinit ${CMAKE_CURRENT_BINARY_DIR}/.gdbinit COPYONLY)
 
-# Copy the gdb script
+# Copy the forktest
+configure_file(${CMAKE_SOURCE_DIR}/ag_test/forktest-xv6-qemu ${CMAKE_CURRENT_BINARY_DIR}/forktest-xv6-qemu COPYONLY)
+
 
 add_custom_target(
   image ALL

@@ -164,10 +164,14 @@ main(void)
         printf(2, "cannot cd %s\n", buf+3);
       continue;
     }
+    printf(1, "about to run a shell cmd ...\n");
     if(fork1() == 0)
       runcmd(parsecmd(buf));
+    printf(1, "just ran a shell cmd ...\n");
     wait();
+    printf(1, "just ran `wait()` ...\n");
   }
+  printf(1, "about to exit `shell` ...");
   exit();
 }
 

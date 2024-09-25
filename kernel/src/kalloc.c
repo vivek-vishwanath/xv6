@@ -21,6 +21,7 @@ struct {
   struct spinlock lock;
   int use_lock;
   struct run *freelist;
+  uint ref_counts[NUM_PHYS_PAGES];  // number of references to each physical page
 } kmem;
 
 // Initialization happens in two phases.
@@ -67,11 +68,24 @@ kfree(char *v)
   // Fill with junk to catch dangling refs.
   memset(v, 1, PGSIZE);
 
+  // Acquire Lock
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = (struct run*)v;
-  r->next = kmem.freelist;
-  kmem.freelist = r;
+
+  // Decrement # of references
+  if (kmem.ref_counts[V2PPN(v)])
+    kmem.ref_counts[V2PPN(v)]--;
+
+  // If there are 0 references left, FREE THE PAGES
+  if (!kmem.ref_counts[V2PPN(v)]){
+    r->next = kmem.freelist;
+    kmem.freelist = r;
+  }
+
+  cprintf("%d\n", kmem.ref_counts[V2PPN(v)]);
+
+  // Release Lock
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -87,10 +101,32 @@ kalloc(void)
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;
-  if(r)
+  char *va = (char *) r;
+  // If the next free page is not a NULL ptr, then move down the free-list, add a reference count
+  if(va) {
     kmem.freelist = r->next;
+    kmem.ref_counts[V2PPN(va)] = 1;
+  }
   if(kmem.use_lock)
     release(&kmem.lock);
-  return (char*)r;
+  return va;
 }
 
+void add_reference(uint pa) {
+  acquire(&kmem.lock);
+  kmem.ref_counts[PPN(pa)]++;
+  release(&kmem.lock);
+}
+
+void remove_reference(uint pa) {
+  acquire(&kmem.lock);
+  kmem.ref_counts[PPN(pa)]--;
+  release(&kmem.lock);
+}
+
+uint num_references(uint pa) {
+  acquire(&kmem.lock);
+  uint count = kmem.ref_counts[PPN(pa)];
+  release(&kmem.lock);
+  return count;
+}

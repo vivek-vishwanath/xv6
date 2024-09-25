@@ -8,5 +8,6 @@ void lab2_pgzero(void *va, uint user_va);
 void lab2_pgcopy(void *dest, void *src, uint user_va);
 
 void lab2_report_pagefault(struct trapframe *tf);
+void handle_pagefault(uint va);
 
 #endif  // __INCLUDE_LAB2_AG_h_

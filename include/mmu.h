@@ -102,6 +102,11 @@ struct segdesc {
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
 
+// # of Physical Pages
+#define PPN(v)          ((uint)(v) >> PTXSHIFT)
+#define NUM_PHYS_PAGES  PPN(PHYSTOP)
+#define V2PPN(v)        PPN(V2P(v))
+
 #ifndef __ASSEMBLER__
 typedef uint pte_t;
 

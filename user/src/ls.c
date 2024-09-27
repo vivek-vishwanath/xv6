@@ -30,8 +30,6 @@ ls(char *path)
   struct dirent de;
   struct stat st;
 
-  printf(1, "about to start `ls` ...\n");
-
   if((fd = open(path, 0)) < 0){
     printf(2, "ls: cannot open %s\n", path);
     return;
@@ -70,7 +68,6 @@ ls(char *path)
     break;
   }
   close(fd);
-  printf(1, "closed `ls` ...\n");
 }
 
 int

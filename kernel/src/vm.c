@@ -15,6 +15,7 @@ pde_t *kpgdir; // for use in scheduler()
 // Run once on entry on each CPU.
 void
 seginit(void) {
+    // cprintf("seginit()\n");
     struct cpu *c;
 
     // Map "logical" addresses to virtual addresses using identity map.
@@ -34,6 +35,7 @@ seginit(void) {
 // create any required page table pages.
 static pte_t *
 walkpgdir(pde_t *pgdir, const void *va, int alloc) {
+    // cprintf("walkpgdir()\n");
     pde_t *pde;
     pte_t *pgtab;
 
@@ -60,6 +62,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc) {
 // be page-aligned.
 static int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm) {
+    // cprintf("mappages()\n");
     char *a, *last;
     pte_t *pte;
 
@@ -117,6 +120,7 @@ static struct kmap {
 // Set up kernel part of a page table.
 pde_t *
 setupkvm(void) {
+    // cprintf("setupkvm()\n");
     pde_t *pgdir;
     struct kmap *k;
 
@@ -141,6 +145,7 @@ setupkvm(void) {
 // space for scheduler processes.
 void
 kvmalloc(void) {
+    // cprintf("kvmalloc()\n");
     kpgdir = setupkvm();
     switchkvm();
 }
@@ -149,12 +154,14 @@ kvmalloc(void) {
 // for when no process is running.
 void
 switchkvm(void) {
+    // cprintf("switchkvm()\n");
     lcr3(V2P(kpgdir)); // switch to the kernel page table
 }
 
 // Switch TSS and h/w page table to correspond to process p.
 void
 switchuvm(struct proc *p) {
+    // cprintf("switchuvm()\n");
     if (p == 0)
         panic("switchuvm: no process");
     if (p->kstack == 0)
@@ -180,6 +187,7 @@ switchuvm(struct proc *p) {
 // sz must be less than a page.
 void
 inituvm(pde_t *pgdir, char *init, uint sz) {
+    // cprintf("inituvm()\n");
     char *mem;
 
     if (sz >= PGSIZE)
@@ -198,6 +206,7 @@ inituvm(pde_t *pgdir, char *init, uint sz) {
 // and the pages from addr to addr+sz must already be mapped.
 int
 loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
+    // cprintf("loaduvm()\n");
     uint i, pa, n;
     pte_t *pte;
 
@@ -221,6 +230,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
 // newsz, which need not be page aligned.  Returns new size or 0 on error.
 int
 allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
+    // cprintf("allocuvm()\n");
     char *mem;
     uint a;
 
@@ -254,6 +264,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
 // process size.  Returns the new process size.
 int
 deallocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
+    // cprintf("deallocuvm()\n");
     pte_t *pte;
     uint a, pa;
 
@@ -281,6 +292,7 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
 // in the user part.
 void
 freevm(pde_t *pgdir) {
+    // cprintf("freevm()\n");
     uint i;
 
     if (pgdir == 0)
@@ -299,6 +311,7 @@ freevm(pde_t *pgdir) {
 // page beneath the user stack.
 void
 clearpteu(pde_t *pgdir, char *uva) {
+    // cprintf("clearpteu()\n");
     pte_t *pte;
 
     pte = walkpgdir(pgdir, uva, 0);
@@ -311,6 +324,7 @@ clearpteu(pde_t *pgdir, char *uva) {
 // of it for a child.
 pde_t *
 copyuvm(pde_t *pgdir, uint sz) {
+    // cprintf("copyuvm()\n");
     pde_t *d;
     pte_t *pte;
     uint pa, i, flags;
@@ -322,6 +336,11 @@ copyuvm(pde_t *pgdir, uint sz) {
             panic("copyuvm: pte should exist");
         if (!(*pte & PTE_P))
             panic("copyuvm: page not present");
+        // if (*pte & PTE_W) {
+        //     cprintf("ENABLED for *%p = 0x%x\n", pte, *pte);
+        // } else {
+        //     cprintf("DISABLED for *%p = 0x%x\n", pte, *pte);
+        // }
         // Disable Writes
         *pte &= ~PTE_W;
         pa = PTE_ADDR(*pte);
@@ -330,8 +349,12 @@ copyuvm(pde_t *pgdir, uint sz) {
         if (mappages(d, (void *) i, PGSIZE, pa, flags) < 0) {
             goto bad;
         }
+        if (*walkpgdir(pgdir, (void *) i, 0) != *walkpgdir(d, (void *) i, 0)) {
+            cprintf("*** Incorrect Page Mapping ***: %p, %d\n", pgdir, i);
+        }
         // Now there's a new proc/pgdir/pgtab pointing to the page that contains `pa`
         add_reference(pa);
+        invlpg((void *) i);
     }
     // Flush TLB
     lcr3(V2P(pgdir));
@@ -346,6 +369,7 @@ bad:
 //PAGEBREAK!
 // Map user virtual address to kernel address.
 char *uva2ka(pde_t *pgdir, char *uva) {
+    // cprintf("uva2ka()\n");
     pte_t *pte;
 
     pte = walkpgdir(pgdir, uva, 0);
@@ -360,6 +384,7 @@ char *uva2ka(pde_t *pgdir, char *uva) {
 // Most useful when pgdir is not the current page table.
 // uva2ka ensures this only works for PTE_U pages.
 int copyout(pde_t *pgdir, uint va, void *p, uint len) {
+    // cprintf("copyout()\n");
     char *buf, *pa0;
     uint n, va0;
 
@@ -381,11 +406,13 @@ int copyout(pde_t *pgdir, uint va, void *p, uint len) {
 }
 
 void kill_proc(char *msg, struct proc *cur_proc) {
+    // cprintf("kill_proc()\n");
     cprintf(msg);
     cur_proc->killed = 1;
 }
 
 void handle_pagefault(uint va) {
+    // cprintf("handle_pagefault()\n");
     va = PGROUNDDOWN(va);
     struct proc *cur_proc = myproc();
     pte_t *pte = walkpgdir(cur_proc->pgdir, (void *) va, 0);
@@ -397,16 +424,16 @@ void handle_pagefault(uint va) {
         case 1:
             // Turn on write flag
             *pte |= PTE_W;
+            invlpg((void *) va);
             break;
         default:
             // Fork the page
             char *mem = kalloc();
             if (!mem) return kill_proc("page fault: out-of-memory", cur_proc);
-            memmove(mem, P2V(pa), PGSIZE);
+            lab2_pgcopy(mem, P2V(pa), va);
             *pte = V2P(mem) | PTE_P | PTE_U | PTE_W;
+            invlpg((void *) va);
             remove_reference(pa);
             break;
     }
-    // Flush TLB
-    lcr3(V2P(cur_proc->pgdir));
 }

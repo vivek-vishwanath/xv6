@@ -2,6 +2,8 @@
 // memory for user processes, kernel stacks, page table pages,
 // and pipe buffers. Allocates 4096-byte pages.
 
+#include <asm/x86.h>
+
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -65,9 +67,6 @@ kfree(char *v)
   if((uint)v % PGSIZE || v < end || V2P(v) >= PHYSTOP)
     panic("kfree");
 
-  // Fill with junk to catch dangling refs.
-  memset(v, 1, PGSIZE);
-
   // Acquire Lock
   if(kmem.use_lock)
     acquire(&kmem.lock);
@@ -79,11 +78,11 @@ kfree(char *v)
 
   // If there are 0 references left, FREE THE PAGES
   if (!kmem.ref_counts[V2PPN(v)]){
+    // Fill with junk to catch dangling refs.
+    memset(v, 1, PGSIZE);
     r->next = kmem.freelist;
     kmem.freelist = r;
   }
-
-  cprintf("%d\n", kmem.ref_counts[V2PPN(v)]);
 
   // Release Lock
   if(kmem.use_lock)

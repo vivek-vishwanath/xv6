@@ -44,7 +44,7 @@ trap(struct trapframe *tf) {
             exit();
         return;
     }
-    if (tf->trapno == T_PGFLT && tf->err == 7) {
+    if (tf->trapno == T_PGFLT) {
         lab2_report_pagefault(tf);
         return;
     }

@@ -10,6 +10,7 @@
 
 extern char data[]; // defined by kernel.ld
 pde_t *kpgdir; // for use in scheduler()
+char *zero_page;
 
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
@@ -231,7 +232,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
 int
 allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
     // cprintf("allocuvm()\n");
-    char *mem;
+    // char *mem;
     uint a;
 
     if (newsz >= KERNBASE)
@@ -240,20 +241,28 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
         return oldsz;
 
     a = PGROUNDUP(oldsz);
-    for (; a < newsz; a += PGSIZE) {
-        mem = kalloc();
-        if (mem == 0) {
+    // Need not allocate memory, rather map to zero page
+    // mem = kalloc();
+    char *new = zero_page;
+    if (!new) {
+        zero_page = kalloc();
+        // cprintf("ZERO_PAGE:va = %p\n", zero_page);
+        if (!zero_page) {
             cprintf("allocuvm out of memory\n");
             deallocuvm(pgdir, newsz, oldsz);
             return 0;
         }
-        lab2_pgzero(mem, a);
-        if (mappages(pgdir, (char *) a, PGSIZE, V2P(mem), PTE_W | PTE_U) < 0) {
-            cprintf("allocuvm out of memory (2)\n");
-            deallocuvm(pgdir, newsz, oldsz);
-            kfree(mem);
-            return 0;
+        lab2_pgzero(zero_page, a);
+    }
+    for (; a < newsz; a += PGSIZE) {
+        if (mappages(pgdir, (char *) a, PGSIZE, V2P(zero_page), PTE_U) < 0) {
+            panic("allocuvm out of memory (2)\n");
         }
+        // if (!new) {
+        //     pte_t *pte = walkpgdir(pgdir, (void *) a, 0);
+        //     // uint pa = PTE_ADDR(*pte);
+        //     // cprintf("ZERO_PAGE:pa = 0x%x\n", pa);
+        // }
     }
     return newsz;
 }
@@ -413,13 +422,16 @@ void kill_proc(char *msg, struct proc *cur_proc) {
 
 void handle_pagefault(uint va) {
     // cprintf("handle_pagefault()\n");
-    va = PGROUNDDOWN(va);
     struct proc *cur_proc = myproc();
     pte_t *pte = walkpgdir(cur_proc->pgdir, (void *) va, 0);
     uint pa = PTE_ADDR(*pte);
+    uint flags = PTE_FLAGS(*pte);
     uint num_ref = num_references(pa);
+    // cprintf("Faulting Page = 0x%x\n", pa);
+    int zero_fault = pa == V2P(zero_page);
+    if (zero_fault) num_ref = 2;
     switch (num_ref) {
-        case 0: return kill_proc("unreferenced page somehow faulted", cur_proc);
+        case 0: return kill_proc("unreferenced page somehow faulted\n", cur_proc);
             break;
         case 1:
             // Turn on write flag
@@ -430,10 +442,14 @@ void handle_pagefault(uint va) {
             // Fork the page
             char *mem = kalloc();
             if (!mem) return kill_proc("page fault: out-of-memory", cur_proc);
-            lab2_pgcopy(mem, P2V(pa), va);
-            *pte = V2P(mem) | PTE_P | PTE_U | PTE_W;
+            if (zero_fault)
+                lab2_pgzero(mem, PGROUNDDOWN(va));
+            else {
+                lab2_pgcopy(mem, P2V(pa), PGROUNDDOWN(va));
+                remove_reference(pa);
+            }
+            *pte = V2P(mem) | flags | PTE_W;
             invlpg((void *) va);
-            remove_reference(pa);
             break;
     }
 }

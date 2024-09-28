@@ -79,7 +79,7 @@ kfree(char *v)
   // If there are 0 references left, FREE THE PAGES
   if (!kmem.ref_counts[V2PPN(v)]){
     // Fill with junk to catch dangling refs.
-    memset(v, 1, PGSIZE);
+    // memset(v, 1, PGSIZE);
     r->next = kmem.freelist;
     kmem.freelist = r;
   }

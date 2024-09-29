@@ -232,7 +232,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
 int
 allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
     // cprintf("allocuvm()\n");
-    // char *mem;
+    char *mem;
     uint a;
 
     if (newsz >= KERNBASE)
@@ -241,28 +241,19 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
         return oldsz;
 
     a = PGROUNDUP(oldsz);
-    // Need not allocate memory, rather map to zero page
-    // mem = kalloc();
-    char *new = zero_page;
-    if (!new) {
-        zero_page = kalloc();
+    for (; a < newsz; a += PGSIZE) {
+        // Need not allocate memory, rather map to zero page
+        mem = kalloc();
         // cprintf("ZERO_PAGE:va = %p\n", zero_page);
-        if (!zero_page) {
+        if (!mem) {
             cprintf("allocuvm out of memory\n");
             deallocuvm(pgdir, newsz, oldsz);
             return 0;
         }
-        lab2_pgzero(zero_page, a);
-    }
-    for (; a < newsz; a += PGSIZE) {
-        if (mappages(pgdir, (char *) a, PGSIZE, V2P(zero_page), PTE_U) < 0) {
+        lab2_pgzero(mem, a);
+        if (mappages(pgdir, (char *) a, PGSIZE, V2P(mem), PTE_U) < 0) {
             panic("allocuvm out of memory (2)\n");
         }
-        // if (!new) {
-        //     pte_t *pte = walkpgdir(pgdir, (void *) a, 0);
-        //     // uint pa = PTE_ADDR(*pte);
-        //     // cprintf("ZERO_PAGE:pa = 0x%x\n", pa);
-        // }
     }
     return newsz;
 }
@@ -351,6 +342,7 @@ copyuvm(pde_t *pgdir, uint sz) {
         //     cprintf("DISABLED for *%p = 0x%x\n", pte, *pte);
         // }
         // Disable Writes
+        if (!(*pte & PTE_W)) *pte |= PTE_RO;
         *pte &= ~PTE_W;
         pa = PTE_ADDR(*pte);
         flags = PTE_FLAGS(*pte);
@@ -435,6 +427,9 @@ void handle_pagefault(uint va) {
             break;
         case 1:
             // Turn on write flag
+            if (*pte & PTE_RO) {
+                cprintf("Read Only page");
+            }
             *pte |= PTE_W;
             invlpg((void *) va);
             break;

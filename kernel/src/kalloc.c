@@ -114,12 +114,14 @@ kalloc(void)
 void add_reference(uint pa) {
   acquire(&kmem.lock);
   kmem.ref_counts[PPN(pa)]++;
+  // cprintf("PA = 0x%x has %d references now\n", pa, kmem.ref_counts[PPN(pa)]);
   release(&kmem.lock);
 }
 
 void remove_reference(uint pa) {
   acquire(&kmem.lock);
   kmem.ref_counts[PPN(pa)]--;
+  // cprintf("PA = 0x%x has %d references now\n", pa, kmem.ref_counts[PPN(pa)]);
   release(&kmem.lock);
 }
 

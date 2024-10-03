@@ -230,9 +230,8 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
 // Allocate page tables and physical memory to grow process from oldsz to
 // newsz, which need not be page aligned.  Returns new size or 0 on error.
 int
-allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
+allocuvm(pde_t *pgdir, uint oldsz, uint newsz, uint flags) {
     // cprintf("allocuvm()\n");
-    char *mem;
     uint a;
 
     if (newsz >= KERNBASE)
@@ -242,16 +241,15 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
 
     a = PGROUNDUP(oldsz);
     for (; a < newsz; a += PGSIZE) {
-        // Need not allocate memory, rather map to zero page
-        mem = kalloc();
-        // cprintf("ZERO_PAGE:va = %p\n", zero_page);
-        if (!mem) {
-            cprintf("allocuvm out of memory\n");
-            deallocuvm(pgdir, newsz, oldsz);
-            return 0;
+        char *va;
+        if (flags & PTE_W) {
+            va = kalloc();
+            lab2_pgzero(va, a);
+        } else {
+            va = zero_page;
         }
-        lab2_pgzero(mem, a);
-        if (mappages(pgdir, (char *) a, PGSIZE, V2P(mem), PTE_U) < 0) {
+        // Need not allocate memory, rather map to zero page
+        if (mappages(pgdir, (char *) a, PGSIZE, V2P(va), flags | PTE_U) < 0) {
             panic("allocuvm out of memory (2)\n");
         }
     }
@@ -281,7 +279,8 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
             if (pa == 0)
                 panic("kfree");
             char *v = P2V(pa);
-            kfree(v);
+            if (v != zero_page)
+                kfree(v);
             *pte = 0;
         }
     }
@@ -336,11 +335,6 @@ copyuvm(pde_t *pgdir, uint sz) {
             panic("copyuvm: pte should exist");
         if (!(*pte & PTE_P))
             panic("copyuvm: page not present");
-        // if (*pte & PTE_W) {
-        //     cprintf("ENABLED for *%p = 0x%x\n", pte, *pte);
-        // } else {
-        //     cprintf("DISABLED for *%p = 0x%x\n", pte, *pte);
-        // }
         // Disable Writes
         if (!(*pte & PTE_W)) *pte |= PTE_RO;
         *pte &= ~PTE_W;
@@ -351,7 +345,9 @@ copyuvm(pde_t *pgdir, uint sz) {
             goto bad;
         }
         // Now there's a new proc/pgdir/pgtab pointing to the page that contains `pa`
-        add_reference(pa);
+        // cprintf("Mapping from 0x%x to 0x%x\n", i, pa);
+        if (zero_page && pa != V2P(zero_page))
+            add_reference(pa);
         invlpg((void *) i);
     }
     // Flush TLB
@@ -403,26 +399,38 @@ int copyout(pde_t *pgdir, uint va, void *p, uint len) {
     return 0;
 }
 
+void zero_init() {
+    zero_page = kalloc();
+    if (!zero_page) {
+        cprintf("Zero init: Out of Memory");
+        return;
+    }
+    lab2_pgzero(zero_page, 0);
+    cprintf("ZERO_PAGE allocated @ %p\n", zero_page);
+}
+
 void handle_pagefault(uint va) {
-    // cprintf("handle_pagefault()\n");
     struct proc *cur_proc = myproc();
     pte_t *pte = walkpgdir(cur_proc->pgdir, (void *) va, 0);
     uint pa = PTE_ADDR(*pte);
     uint flags = PTE_FLAGS(*pte);
     uint num_ref = num_references(pa);
-    // cprintf("Faulting Page = 0x%x\n", pa);
+
+    // If the faulting pa matches the pa of the zero page, then the fault is caused by the zero page
     int zero_fault = pa == V2P(zero_page);
+    // If the zero page is faulting, handle via the default case below
     if (zero_fault) num_ref = 2;
     switch (num_ref) {
         case 0:
             cur_proc->killed = 1;
             break;
         case 1:
-            // Turn on write flag
+            // Check if this page was always READ-ONLY, if so kill it
             if (*pte & PTE_RO) {
                 cur_proc->killed = 1;
                 return;
             }
+        // Turn on write flag
             *pte |= PTE_W;
             invlpg((void *) va);
             break;

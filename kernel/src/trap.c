@@ -44,10 +44,6 @@ trap(struct trapframe *tf) {
             exit();
         return;
     }
-    if (tf->trapno == T_PGFLT) {
-        lab2_report_pagefault(tf);
-        return;
-    }
 
     switch (tf->trapno) {
         case T_IRQ0 + IRQ_TIMER:
@@ -80,7 +76,9 @@ trap(struct trapframe *tf) {
                     cpuid(), tf->cs, tf->eip);
             lapiceoi();
             break;
-
+        case T_PGFLT:
+            lab2_report_pagefault(tf);
+        break;
         //PAGEBREAK: 13
         default:
             if (myproc() == 0 || (tf->cs & 3) == 0) {

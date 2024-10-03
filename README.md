@@ -1,20 +1,22 @@
 # Lab 3 -- Scheduling and Threading
 
 The purpose of this lab is to introduce you to the concepts of
-scheduling and concurrency.  This lab consists primarily of two parts:  First,
+scheduling and concurrency. This lab consists primarily of two parts: First,
 you will be extending xv6's scheduler to support multiple new schedulers.
-Second, you will be constructing a kernel-space threading library. 
-This lab also includes an extra-credit opportunity that allows you to design your 
+Second, you will be constructing a kernel-space threading library.
+This lab also includes an extra-credit opportunity that allows you to design your
 own scheduling algorithm and benchmark its performance.
 
-This is a *large* lab, larger than the labs you've done so far, so be warned! 
+This is a _large_ lab, larger than the labs you've done so far, so be warned!
 
 To help you stay organized, we have split it into two main checkpoints:
+
 - Lab 3 - Checkpoint (Part 1 + Part 2)
 - Lab 3 (Full lab)
 
 To give a sense of how long it may take to complete each part, we've marked
 them with the following labels:
+
 - easy: 30m to 1hr
 - moderate: 1-5hrs
 - hard: 5-9hrs
@@ -24,8 +26,8 @@ your grasp of the course material and proficiency with navigating xv6. We
 highly recommend that you read chapters 3 to 5 of the xv6 manual.
 
 **NOTE:** Throughout this lab, you will have to test the concurrency of your
-system.  You will have to run the `xv6-qemu` script with multiple cpus (default
-is 1 cpu) using the `-c <CPUS>` or `--num-cpus=<CPUS>` flags.  We recommend
+system. You will have to run the `xv6-qemu` script with multiple cpus (default
+is 1 cpu) using the `-c <CPUS>` or `--num-cpus=<CPUS>` flags. We recommend
 initial debugging with 1 cpu, to make things easier to parse, then further
 debugging with additional cpus.
 
@@ -44,6 +46,7 @@ In this portion of the lab we will define a basic scheduler API, and build sever
 schedulers.
 
 #### Background
+
 Recall the xv6 scheduler is found in `kernel/src/proc.c`, in the `scheduler()` function, and by
 default implements a round robin (RR) scheduler. After each CPU is setup, all
 eventually reach `mpmain()`, where `scheduler()` is called for the first time.
@@ -68,13 +71,12 @@ kernel scheduler.
 ### The Spec
 
 For this portion of the lab, you will be enabling the user-space to specify
-their scheduler policy.  You will:
+their scheduler policy. You will:
 
 - Enable the user-space to select their scheduling policy (`SCHED_RR`, or
   `SCHED_FIFO`)
 - Enable the user-space process to set a priority.
 - Implement two new schedulers: Round Robin with Priority and FIFO with Priority
-
 
 #### Added System Call
 
@@ -103,35 +105,35 @@ pre-processor directive `#include "sched.h"`).
 #### Scheduling Algorithms
 
 You will be building two schedulers for this lab, a Round Robin (RR), and a
-First In First Out (FIFO) scheduler.  We will also be adding a notion of
-priority to these schedulers.  We will explain the behaviors of these
+First In First Out (FIFO) scheduler. We will also be adding a notion of
+priority to these schedulers. We will explain the behaviors of these
 schedulers without priority first, then add the notion of priority after.
 
 ##### Round Robin
 
 Your Round Robin scheduler will logically create a circular buffer of processes
-to run, and loops over the buffer.  It will run each process in the buffer for
+to run, and loops over the buffer. It will run each process in the buffer for
 either one scheduling quantum (unit of scheduling), or until the process becomes
-non-runnable.  At which point it will select the next process in the circular
+non-runnable. At which point it will select the next process in the circular
 buffer.
 
 For this lab you are to implement a round robin scheduler, much like the default
 xv6 scheduler (note the default xv6 scheduler is a reasonable RR baseline, and you
-may directly use that code, particularly for your non-priority scheduler).  Your
-scheduler must:  Keep circular buffer of processes, then run those processes in order
-assigning a time-quantum to each process.  Once that time quantum has expired, the
+may directly use that code, particularly for your non-priority scheduler). Your
+scheduler must: Keep circular buffer of processes, then run those processes in order
+assigning a time-quantum to each process. Once that time quantum has expired, the
 scheduler should run the next available process.
 
 ##### First-In-First-Out
 
 The second scheduler you are to construct is the First-In-First-Out (FIFO) scheduler.
-The FIFO scheduler logically keeps a list of processes, then runs them in-order.  Unlike
+The FIFO scheduler logically keeps a list of processes, then runs them in-order. Unlike
 the RR scheduler, as long as the process at the head of the FIFO queue can make process,
 it will not be preempted unless a higher priority process comes along (see the priorities
 section).
 
-There are two major  differences, between RR and FIFO.  1) FIFO will not yield to another
-process of the same priority until the current process becomes un-runnable.  2) FIFO processes will
+There are two major differences, between RR and FIFO. 1) FIFO will not yield to another
+process of the same priority until the current process becomes un-runnable. 2) FIFO processes will
 always run with higher priority than RR processes (e.g. if there are any
 runnable FIFO processes, they should run before any RR processes).
 
@@ -140,22 +142,22 @@ runnable FIFO processes, they should run before any RR processes).
 Now that we've specified the basics of FIFO and RR scheduling, we'll specify
 our priority policy.
 
-Each process has both a scheduler policy and priority.  When each of your
+Each process has both a scheduler policy and priority. When each of your
 schedulers are selecting a process, the scheduler should obey the following
 rules:
 
 - FIFO policy processes always run before RR policy processes.
 - Higher priority values correspond to higher logical priority.
-- A process will not be scheduled if a higher priority process is runnable.  
+- A process will not be scheduled if a higher priority process is runnable.
 - If two processes share priority, then they will run in scheduler order
   (as specified in the scheduler specification).
 - When a new process becomes runnable, if it should run before the current
   process, your scheduler should immediately preempt the currently running process and
   schedule it (with one exception, in "Nit").
 
-
 ##### Nit:
-Do not temper with the APIC `TIMER` or `PERIODIC` as you will be modifying the 
+
+Do not temper with the APIC `TIMER` or `PERIODIC` as you will be modifying the
 external timer which interrupts the CPU for scheduling decisions.
 
 If another process becomes a better candidate than the currently running process
@@ -172,16 +174,17 @@ event which causes `p2` to suspend.
 
 All processes should default to `SCHED_RR` with a priority of 0
 
-## Part 1 Extra Credit (moderate) -- Custom Scheduling Algorithm and Evaluation 
+## Part 1 Extra Credit (moderate) -- Custom Scheduling Algorithm and Evaluation
 
 If you have successfully implemented FIFO and RR, this is an opportunity to design your
-own scheduling algorithm, and evaluate its performance with respect to your prior algorithms. 
+own scheduling algorithm, and evaluate its performance with respect to your prior algorithms.
 
 ##### Custom Scheduling Algorithm
 
-This is the open-ended design portion of the assignment. Feel free to implement ANY scheduling algorithm, 
-which you have studied in class, or which you have done your own research on. 
+This is the open-ended design portion of the assignment worth **10 bonus points** on your final Lab 3 score. Feel free to implement ANY scheduling algorithm,
+which you have studied in class, or which you have done your own research on.
 Below are a few suggestions of potential algorithms you may want to consider:
+
 - Linux Completely Fair Scheduler
 - Multilevel Queue Scheduling
 - Multi-Queue Multiprocessor Scheduing (Per-processor Queue)
@@ -189,32 +192,32 @@ Below are a few suggestions of potential algorithms you may want to consider:
 
 ##### Gathering Statistics
 
-In order to evaluate the performance of your scheduling algorithm, you will need to 
+In order to evaluate the performance of your scheduling algorithm, you will need to
 implement a mechanism for gathering scheduling statistics.
-For the purpose of measuring timing, take a look at `allocproc()`, `sleep()`, `yield()`, and `schedule()`, 
-all of which are boundries which you may need to measure a given statistic. 
+For the purpose of measuring timing, take a look at `allocproc()`, `sleep()`, `yield()`, and `schedule()`,
+all of which are boundries which you may need to measure a given statistic.
 
-You must implement all of these measurements, though you may add intermediary values as necessary in 
-order to properly calculate these statistics. 
+You must implement all of these measurements, though you may add intermediary values as necessary in
+order to properly calculate these statistics.
 
 The unit of measurement that you must use for these statistics is xv6 `ticks`. This is a global
-counter in the kernel that is incremented for every time-quantum that has passed. 
+counter in the kernel that is incremented for every time-quantum that has passed.
 
 ```
 /* include/sched.h */
-struct schedinfo 
+struct schedinfo
 {
   uint creation_time;  // ticks when the process was created
   uint exit_time;      // ticks when the process exited
   uint response_time;  // ticks from creation to exit (user-centric measure)
   uint execution_time; // ticks spent executing on a cpu
   uint wait_time;      // ticks spent waiting in ready queue
-  uint io_time;        // ticks spent waiting for and executing in I/O 
+  uint io_time;        // ticks spent waiting for and executing in I/O
 };
 ```
 
 In order to retrieve these statistics from user-space, you will need to implement
-a specialized wait system-call that will take in a pointer a user `schedinfo struct`, and will 
+a specialized wait system-call that will take in a pointer a user `schedinfo struct`, and will
 fill these information when the process exists.
 
 ```
@@ -233,12 +236,12 @@ Behavior:
 
 ##### Performance Evaluation
 
-Now that you have implemented your own scheduler, you will need to evaluate its performance compared to 
-Round-Robin and FCFS. We have provided a benchmark that you are able to run in order to gather your data `workload`. 
+Now that you have implemented your own scheduler, you will need to evaluate its performance compared to
+Round-Robin and FCFS. We have provided a benchmark that you are able to run in order to gather your data `workload`.
 
 _Once you have `setscheduler` and `waitinfo` implemented, make sure to update the `workload.c` file to utilize these functions by uncommenting the respective code._
 
-As discussed in class, a method for evaluating the performance of schedulers is to plot the 
+As discussed in class, a method for evaluating the performance of schedulers is to plot the
 cumulative distribution of end-to-end latency (creation -> exit response time). Plot the latency
 on a cdf curve and note the P50, P95 and P99 scores. Feel free to draw additional graphs to represent your data
 in a visualizable format, in addition to your latency cdf.
@@ -249,11 +252,11 @@ Below is an example of a cdf that was gathered of FCFS, Round-Robin and an addit
 
 A note on the statistics gathered, since we are running xv6 on top of an emulator
 such as qemu rather than on bare-metal, results may strongly vary depending on
-host device and the performance capabilities of the emulator. 
+host device and the performance capabilities of the emulator.
 
-##### Technical Writeup 
+##### Technical Writeup
 
-As you have the freedom to implement any scheduling algorithm, you must explain your 
+As you have the freedom to implement any scheduling algorithm, you must explain your
 design decisions and present your performance measurements. You must submit a ~1 page writeup detailing the implementation
 of you scheduling algorithm, and analysing the performance results that were gathered. Include any relevant graphs
 and table that will be useful in your writeup. Please name the file `report.pdf` and place it in the project root
@@ -261,19 +264,19 @@ and table that will be useful in your writeup. Please name the file `report.pdf`
 
 ## Part 2 (hard) -- Threading
 
-What is a thread, and how do we build it?  Like a process, a thread represents
+What is a thread, and how do we build it? Like a process, a thread represents
 an independent execution context (all processes execute independently), however,
 where processes have memory isolation, a thread shares its address space with
 all of its peer threads.
 
-In this part of lab3 you will be adding threading support to xv6.  Like Linux,
+In this part of lab3 you will be adding threading support to xv6. Like Linux,
 you'll be treating threads as processes, however they share memory with their
 neighboring threads.
 
 ### The birth of `clone`
 
 First, you'll need a way to create a new thread (a process that shares address
-space with its parent).  For this lab, we'll be accomplishing this with our
+space with its parent). For this lab, we'll be accomplishing this with our
 version of the classic system call `clone()`:
 
 ```
@@ -296,16 +299,16 @@ Behavior:
   On success clone creates a new process which shares its address space with its
   parent.  Additionally, clone sets up the child's stack to be logically
   equivalent to the parent's stack.  On clone the child's register state is
-  equivalent to that of the parent, with the exception of registers used for 
-  the return value from clone (recall eax is the return value of a system call), 
+  equivalent to that of the parent, with the exception of registers used for
+  the return value from clone (recall eax is the return value of a system call),
   or holding information about the stack.
 ```
 
 `clone()` creates a new process, and adds it to the caller's "thread group".
-Processes within a "thread group" all share the same address space.  Thread
-groups are created via either the `fork` or `exec` system calls.  The first
+Processes within a "thread group" all share the same address space. Thread
+groups are created via either the `fork` or `exec` system calls. The first
 process within a thread group (the `fork`d or `exec`d process) is the thread
-group's owner.  If the owner of a thread group terminates before the other
+group's owner. If the owner of a thread group terminates before the other
 threads in the group, the behavior for those threads is undefined.
 
 Clone should additionally follow these rules:
@@ -314,17 +317,17 @@ Clone should additionally follow these rules:
   passed a stack that's too small), it should return with an error.
 
 - Cloned processes share several resources with their parent, namely:
-   - Virtual address space (shared memory)
-   - File descriptor table
-   - Current working directory
+  - Virtual address space (shared memory)
+  - File descriptor table
+  - Current working directory
 
 When any thread makes a change to a shared resource (such as writing to memory,
 allocating new memory, or changing the directory) that change should be visible
-to all threads in that thread group. 
+to all threads in that thread group.
 
 **NOTE:** Clone sets up its stack to be logically equivalent to its parents, however it
-cannot just `memcpy` the stack.  What do you know about stacks that limits you
-from doing this (think back to lab1's backtrace)?  How must clone adjust?
+cannot just `memcpy` the stack. What do you know about stacks that limits you
+from doing this (think back to lab1's backtrace)? How must clone adjust?
 
 ### Waiting on specific processes
 
@@ -334,6 +337,7 @@ non-deterministic results. As you will see below, we sometimes need to be able
 to wait on specific processes.
 
 You will add support for this by implementing the `waitpid()` system call:
+
 ```
 int waitpid(int pid)
 
@@ -362,6 +366,7 @@ threading library.
 You will now implement the following userspace library functions to allow users
 to easily create and wait on threads. These functions are defined in
 `user/src/threads.c`.
+
 ```
 Function: thread_create
 Arguments:
@@ -411,6 +416,7 @@ code for it can be found in `user/asm/free_stack_and_exit.S`)**
 Now you will extend your userspace library by implementing spinlocks.
 
 You will implement the following functions:
+
 ```
 Function: spinlock_init
 Arguments:
@@ -437,7 +443,7 @@ Definition:
 int spinlock_acquire(struct spinlock *s);
 
 
-Function: spinlock_release 
+Function: spinlock_release
 Arguments:
   - s -- a pointer to the spinlock to release
 Return value:
@@ -455,12 +461,12 @@ synchronization primitives is tricky. In particular, you will need to use
 atomic instructions to avoid data races. To that end, we've patched C11 atomics
 to the userspace implementation of xv6. You can find the corresponding header
 file at `user/include/atomics.h` (which you can subsequently include using
-`#include "atomics.h"` in userspace). 
+`#include "atomics.h"` in userspace).
 
 ## Part 5 (hard) -- Userspace mutexes
 
 With spinlocks you can now write multi-threaded code that protects its critical
-sections.  Spinlocks, however, can be inefficient if the lock is heavily
+sections. Spinlocks, however, can be inefficient if the lock is heavily
 contended because you waste CPU cycles by having multiple threads contending
 for the lock spin in a loop.
 
@@ -474,6 +480,7 @@ notified to wakeup right before it goes to sleep, thereby losing the
 notification and sleeping indefinitely.
 
 To address this issue, we will be implementing the following system calls:
+
 ```
 Function: park
 Arguments:
@@ -514,6 +521,7 @@ int unpark(void *chan);
 
 Once you have these system calls in place, use them to implement the following
 functions in `user/src/threads.c`:
+
 ```
 Function: mutex_init
 Arguments:
@@ -573,8 +581,9 @@ to sleep until certain condition is met. Condition variables give us this
 abstraction.
 
 Implement the following functions in `user/src/threads.c`:
+
 ```
-Function: cond_init 
+Function: cond_init
 Arguments:
   - cond -- a pointer to the condition variable to initialize
 Return value:
@@ -586,7 +595,7 @@ Definition:
 int cond_init(struct condvar *cond);
 
 
-Function: cond_wait 
+Function: cond_wait
 Arguments:
   - cond -- a pointer to the condition variable to wait on
   - m -- a pointer to the mutex to acquire
@@ -666,16 +675,19 @@ primitives. We will be looking over your submission when hand-grading, so
 please thoroughly test your implementation.
 
 On Gradescope you will find two assignments:
+
 - Lab 3 - Checkpoint (Tests 1-21)
 - Lab 3 (All tests)
 
-Your final Lab 3 score is equal to the score you get for the Lab 3 assignment (autograded + hand-graded). 
-This means that you can continue working on the checkpoint tests after the due date. If you are able to pass 
-all the autograder tests in the checkpoint by the due date, ~~five~~ **ten bonus points** will be added to your final Lab 3 score.
+Your final Lab 3 score is equal to the score you get for the Lab 3 assignment (autograded + hand-graded).
+This means that you can continue working on the checkpoint tests after the due date. If you are able to pass
+all the autograder tests in the checkpoint by the due date, **7.5 bonus points** will be added to your final Lab 3 score.
 
 ## Hand Grading
+
 Similar to lab 2, there is a hand graded section of the lab. We will check for
 the following:
+
 - Mutal exclusion in newly created kernel data structures
 - Attempts to subvert the autograder
 - Violations of the student honor code

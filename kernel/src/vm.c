@@ -423,12 +423,14 @@ void handle_pagefault(uint va) {
     int zero_fault = pa == V2P(zero_page);
     if (zero_fault) num_ref = 2;
     switch (num_ref) {
-        case 0: return kill_proc("unreferenced page somehow faulted\n", cur_proc);
+        case 0:
+            cur_proc->killed = 1;
             break;
         case 1:
             // Turn on write flag
             if (*pte & PTE_RO) {
-                cprintf("Read Only page");
+                cur_proc->killed = 1;
+                return;
             }
             *pte |= PTE_W;
             invlpg((void *) va);

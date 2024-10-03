@@ -350,9 +350,6 @@ copyuvm(pde_t *pgdir, uint sz) {
         if (mappages(d, (void *) i, PGSIZE, pa, flags) < 0) {
             goto bad;
         }
-        if (*walkpgdir(pgdir, (void *) i, 0) != *walkpgdir(d, (void *) i, 0)) {
-            cprintf("*** Incorrect Page Mapping ***: %p, %d\n", pgdir, i);
-        }
         // Now there's a new proc/pgdir/pgtab pointing to the page that contains `pa`
         add_reference(pa);
         invlpg((void *) i);
@@ -406,12 +403,6 @@ int copyout(pde_t *pgdir, uint va, void *p, uint len) {
     return 0;
 }
 
-void kill_proc(char *msg, struct proc *cur_proc) {
-    // cprintf("kill_proc()\n");
-    cprintf(msg);
-    cur_proc->killed = 1;
-}
-
 void handle_pagefault(uint va) {
     // cprintf("handle_pagefault()\n");
     struct proc *cur_proc = myproc();
@@ -438,7 +429,10 @@ void handle_pagefault(uint va) {
         default:
             // Fork the page
             char *mem = kalloc();
-            if (!mem) return kill_proc("page fault: out-of-memory", cur_proc);
+            if (!mem) {
+                cur_proc->killed = 1;
+                return;
+            }
             if (zero_fault)
                 lab2_pgzero(mem, PGROUNDDOWN(va));
             else {

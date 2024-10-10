@@ -1,7 +1,15 @@
 *~
 .gdbinit
+<<<<<<< Updated upstream
 build
 cmake-build-debug
 .idea
 .DS_Store
 submission.zip
+=======
+.vscode
+build/
+cmake-build-debug/
+.idea/
+-b
+>>>>>>> Stashed changes

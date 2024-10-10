@@ -2,3 +2,5 @@
 .gdbinit
 .vscode
 build/
+.idea/
+cmake-build-debug

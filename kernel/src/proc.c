@@ -65,6 +65,18 @@ myproc(void) {
   return p;
 }
 
+void set_runnable(struct proc *np) {
+  np->state = RUNNABLE;
+}
+
+void set_running(struct proc *p) {
+  p->state = RUNNING;
+}
+
+void set_sleeping(struct proc *p) {
+  p->state = SLEEPING;
+}
+
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -148,7 +160,7 @@ userinit(void)
   // because the assignment might not be atomic.
   acquire(&ptable.lock);
 
-  p->state = RUNNABLE;
+  set_runnable(p);
 
   release(&ptable.lock);
 }
@@ -214,7 +226,7 @@ fork(void)
 
   acquire(&ptable.lock);
 
-  np->state = RUNNABLE;
+  set_runnable(np);
 
   release(&ptable.lock);
 
@@ -341,7 +353,7 @@ scheduler(void)
       // before jumping back to us.
       c->proc = p;
       switchuvm(p);
-      p->state = RUNNING;
+      set_running(p);
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -386,7 +398,7 @@ void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
-  myproc()->state = RUNNABLE;
+  set_runnable(myproc());
   sched();
   release(&ptable.lock);
 }
@@ -437,7 +449,7 @@ sleep(void *chan, struct spinlock *lk)
   }
   // Go to sleep.
   p->chan = chan;
-  p->state = SLEEPING;
+  set_sleeping(p);
 
   sched();
 
@@ -461,7 +473,7 @@ wakeup1(void *chan)
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan)
-      p->state = RUNNABLE;
+      set_runnable(p);
 }
 
 // Wake up all processes sleeping on chan.
@@ -487,7 +499,7 @@ kill(int pid)
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
-        p->state = RUNNABLE;
+        set_runnable(p);
       release(&ptable.lock);
       return 0;
     }

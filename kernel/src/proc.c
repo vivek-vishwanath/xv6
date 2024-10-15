@@ -5,6 +5,9 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+
+#include <sched.h>
+
 #include "spinlock.h"
 
 struct {
@@ -13,6 +16,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+static struct proc *rq;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -67,10 +71,41 @@ myproc(void) {
 
 void set_runnable(struct proc *np) {
   np->state = RUNNABLE;
+  if (!rq)
+    rq = np;
+  else if (np->policy < rq->policy || (np->policy == rq->policy && np->priority > rq->priority)) {
+    np->next = rq;
+    rq->back = np;
+    rq = np;
+  } else {
+    struct proc *p = rq;
+    for(;;) {
+      struct proc *q = p->next;
+      if (!q || np->policy < q->policy || (np->policy == q->policy && np->priority > q->priority)) {
+        p->next = np;
+        np->back = p;
+        np->next = q;
+        if (q)
+          q->back = np;
+        break;
+      }
+      p = q;
+    }
+  }
 }
 
 void set_running(struct proc *p) {
   p->state = RUNNING;
+  if (rq == p) {
+    rq = p->next;
+    p->next = 0;
+    rq->back = 0;
+  } else {
+    p->back->next = p->next;
+    p->next->back = p->back;
+    p->back = 0;
+    p->next = 0;
+  }
 }
 
 void set_sleeping(struct proc *p) {
@@ -100,6 +135,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->policy = SCHED_RR;
 
   release(&ptable.lock);
 

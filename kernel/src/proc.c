@@ -337,7 +337,8 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
+  int last = -1;
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -351,7 +352,12 @@ scheduler(void)
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+      if (last != p->pid) {
+        cprintf("\tswitching to process #%d\n", p->pid);
+        procdump();
+      }
       c->proc = p;
+      last = p->pid;
       switchuvm(p);
       set_running(p);
 
@@ -397,6 +403,7 @@ sched(void)
 void
 yield(void)
 {
+  cprintf("proc #%d is yielding\n", myproc()->pid);
   acquire(&ptable.lock);  //DOC: yieldlock
   set_runnable(myproc());
   sched();

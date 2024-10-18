@@ -310,9 +310,9 @@ exit(void)
   int time = sys_uptime();
   curproc->info.exit_time = time;
   curproc->info.response_time = curproc->info.execution_time + curproc->info.wait_time + curproc->info.io_time;
-  cprintf("proc %d finished with the following times:\n{\n\tcreation: %d,\n\texecution: %d,\n\twait: %d,\n\tsleep: %d\n\texit: %d,\n\tresponse: %d,\n}\n",
-    curproc->pid, curproc->info.creation_time, curproc->info.execution_time, curproc->info.wait_time,
-    curproc->info.io_time, curproc->info.exit_time, curproc->info.response_time);
+  // cprintf("proc %d finished with the following times:\n{\n\tcreation: %d,\n\texecution: %d,\n\twait: %d,\n\tsleep: %d\n\texit: %d,\n\tresponse: %d,\n}\n",
+    // curproc->pid, curproc->info.creation_time, curproc->info.execution_time, curproc->info.wait_time,
+    // curproc->info.io_time, curproc->info.exit_time, curproc->info.response_time);
 
   if(curproc == initproc)
     panic("init exiting");

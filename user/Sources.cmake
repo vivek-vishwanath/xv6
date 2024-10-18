@@ -23,6 +23,7 @@ set(user_SOURCES
   # Common utility programs
   src/ls.c
   src/cat.c
+  src/forktest.c
 
   # Benchmark
   src/benchmark/mmult.c

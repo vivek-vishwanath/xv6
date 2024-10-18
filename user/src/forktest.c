@@ -42,6 +42,7 @@ forktest(void)
       exit();
     }
   }
+  while (wait() >= 0);
 
   if(n == N){
     printf(1, "fork claimed to work %d times!\n", N);

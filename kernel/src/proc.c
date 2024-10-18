@@ -122,7 +122,7 @@ void set_runnable(struct proc *np) {
   if (np->state == SLEEPING)
     np->info.io_time = time - np->info.execution_time - np->info.wait_time - np->info.creation_time;
   else if (np->state == RUNNING)
-    np->info.execution_time = time - np->info.io_time - np->info.wait_time - np->info.creation_time);
+    np->info.execution_time = time - np->info.io_time - np->info.wait_time - np->info.creation_time;
   np->state = RUNNABLE;
   add_to_rq(np);
 }

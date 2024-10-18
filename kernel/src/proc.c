@@ -16,7 +16,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-static struct proc *rq;
+struct proc *rq;
 
 int nextpid = 1;
 extern void forkret(void);

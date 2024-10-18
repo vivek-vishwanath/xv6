@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
 
 int
 sys_fork(void)
@@ -88,4 +89,67 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+extern struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
+
+extern struct proc *rq;
+extern void set_runnable(struct proc *np);
+extern void add_to_rq(struct proc *np);
+extern void remove_from_rq(struct proc *p);
+
+void rq_dump() {
+  if (!rq) {
+    cprintf("<<empty ready queue>>");
+    return;
+  }
+  cprintf("{");
+  struct proc *p = rq;
+  while (p) {
+    cprintf("%d", p->pid);
+    p = p->next;
+    if (p) {
+      cprintf(" --> ");
+    }
+  }
+    cprintf("}\n");
+
+}
+
+int
+sys_setscheduler(void) {
+  int pid, policy, priority;
+  struct proc *p;
+  if (argint(0, &pid) < 0 || argint(1, &policy) < 0 || argint(2, &priority) < 0)
+    return -1;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->pid == pid) {
+      p->policy = policy;
+      p->priority = priority;
+      break;
+    }
+  }
+  remove_from_rq(p);
+  add_to_rq(p);
+  yield();
+  return pid;
+}
+
+int sys_clone(void) {
+  return -1;
+}
+int sys_park(void) {
+  return -1;
+}
+int sys_setpark(void) {
+  return -1;
+}
+int sys_unpark(void) {
+  return -1;
+}
+int sys_waitpid(void) {
+  return -1;
 }

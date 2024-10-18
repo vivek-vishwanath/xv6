@@ -21,6 +21,7 @@ struct proc *rq;
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
+extern int sys_uptime(void);
 
 static void wakeup1(void *chan);
 
@@ -70,11 +71,11 @@ myproc(void) {
 }
 
 int preempt(struct proc *op, struct proc *np) {
-  return (np->policy == SCHED_FIFO && op->policy == SCHED_RR) ||
-    (np->policy == op->policy &&
-      (np->priority > op->priority ||
-        (np->priority == op->priority && np->pid < op->pid)
-        ));
+  if (np->policy == SCHED_FIFO && op->policy == SCHED_FIFO)
+    return np->priority > op->priority || (np->priority == op->priority && np->info.creation_time < op->info.creation_time);
+  if (np->policy == SCHED_RR && op->policy == SCHED_RR)
+    return np->priority > op->priority || (np->priority == op->priority && np->info.execution_time < op->info.execution_time);
+  return np->policy < op->policy;
 }
 
 void add_to_rq(struct proc *np) {
@@ -117,12 +118,18 @@ void remove_from_rq(struct proc *p) {
 }
 
 void set_runnable(struct proc *np) {
-  cprintf("proc %d is READY\n", np->pid);
+  int time = sys_uptime();
+  if (np->state == SLEEPING)
+    np->info.io_time = time - np->info.execution_time - np->info.wait_time - np->info.creation_time;
+  else if (np->state == RUNNING)
+    np->info.execution_time = time - np->info.io_time - np->info.wait_time - np->info.creation_time);
   np->state = RUNNABLE;
   add_to_rq(np);
 }
 
 void set_sleeping(struct proc *p) {
+  int time = sys_uptime();
+  p->info.execution_time = time - p->info.wait_time - p->info.io_time - p->info.creation_time;
   p->state = SLEEPING;
 }
 
@@ -150,6 +157,13 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->policy = SCHED_RR;
+  int time = sys_uptime();
+  p->info.creation_time = time;
+  p->info.execution_time = 0;
+  p->info.wait_time = 0;
+  p->info.io_time = 0;
+  p->info.response_time = 0;
+  p->info.exit_time = 0;
 
   release(&ptable.lock);
 
@@ -293,6 +307,13 @@ exit(void)
   struct proc *p;
   int fd;
 
+  int time = sys_uptime();
+  curproc->info.exit_time = time;
+  curproc->info.response_time = curproc->info.execution_time + curproc->info.wait_time + curproc->info.io_time;
+  cprintf("proc %d finished with the following times:\n{\n\tcreation: %d,\n\texecution: %d,\n\twait: %d,\n\tsleep: %d\n\texit: %d,\n\tresponse: %d,\n}\n",
+    curproc->pid, curproc->info.creation_time, curproc->info.execution_time, curproc->info.wait_time,
+    curproc->info.io_time, curproc->info.exit_time, curproc->info.response_time);
+
   if(curproc == initproc)
     panic("init exiting");
 
@@ -396,7 +417,8 @@ scheduler(void)
     acquire(&ptable.lock);
     p = rq;
     if (p) {
-      cprintf("proc %d is RUNNING\n", p->pid);
+      int time = sys_uptime();
+      p->info.wait_time = time - p->info.io_time - p->info.execution_time - p->info.creation_time;
       p->state = RUNNING;
       c->proc = p;
       rq = p->next;
@@ -441,7 +463,6 @@ sched(void)
 void
 yield(void)
 {
-  cprintf("proc #%d is yielding\n", myproc()->pid);
   acquire(&ptable.lock);  //DOC: yieldlock
   set_runnable(myproc());
   sched();

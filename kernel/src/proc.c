@@ -69,24 +69,27 @@ myproc(void) {
   return p;
 }
 
-void set_runnable(struct proc *np) {
-  np->state = RUNNABLE;
+int preempt(struct proc *op, struct proc *np) {
+  return (np->policy == SCHED_FIFO && op->policy == SCHED_RR) ||
+    (np->policy == op->policy &&
+      (np->priority > op->priority ||
+        (np->priority == op->priority && np->pid < op->pid)
+        ));
+}
+
+void add_to_rq(struct proc *np) {
   if (!rq)
     rq = np;
-  else if (np->policy < rq->policy || (np->policy == rq->policy && np->priority > rq->priority)) {
+  else if (preempt(rq, np)) {
     np->next = rq;
-    rq->back = np;
     rq = np;
   } else {
     struct proc *p = rq;
     for(;;) {
       struct proc *q = p->next;
-      if (!q || np->policy < q->policy || (np->policy == q->policy && np->priority > q->priority)) {
+      if (!q || preempt(q, np)) {
         p->next = np;
-        np->back = p;
         np->next = q;
-        if (q)
-          q->back = np;
         break;
       }
       p = q;
@@ -94,18 +97,29 @@ void set_runnable(struct proc *np) {
   }
 }
 
-void set_running(struct proc *p) {
-  p->state = RUNNING;
-  if (rq == p) {
-    rq = p->next;
-    p->next = 0;
-    rq->back = 0;
-  } else {
-    p->back->next = p->next;
-    p->next->back = p->back;
-    p->back = 0;
-    p->next = 0;
+void remove_from_rq(struct proc *p) {
+  struct proc *q = rq;
+  if (rq && rq->pid == p->pid) {
+    rq = rq->next;
+    q->next = 0;
+  } else if (rq) {
+    struct proc *target = q->next;
+    while (target) {
+      if (target->pid == p->pid) {
+        q->next = target->next;
+        target->next = 0;
+        break;
+      }
+      q = target;
+      target = q->next;
+    }
   }
+}
+
+void set_runnable(struct proc *np) {
+  cprintf("proc %d is READY\n", np->pid);
+  np->state = RUNNABLE;
+  add_to_rq(np);
 }
 
 void set_sleeping(struct proc *p) {
@@ -374,34 +388,22 @@ scheduler(void)
   struct cpu *c = mycpu();
   c->proc = 0;
 
-  int last = -1;
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      if (last != p->pid) {
-        cprintf("\tswitching to process #%d\n", p->pid);
-        procdump();
-      }
+    p = rq;
+    if (p) {
+      cprintf("proc %d is RUNNING\n", p->pid);
+      p->state = RUNNING;
       c->proc = p;
-      last = p->pid;
+      rq = p->next;
+      p->next = 0;
       switchuvm(p);
-      set_running(p);
-
-      swtch(&(c->scheduler), p->context);
+      swtch(&c->scheduler, p->context);
       switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
     }
     release(&ptable.lock);

@@ -52,6 +52,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
   uint policy;                 // The scheduling policy used (FIFO or RR)
   uint priority;               // The logical priority of the process
   struct proc *back;           // Back ptr to previous process in the RQ

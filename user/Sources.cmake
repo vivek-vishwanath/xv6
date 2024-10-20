@@ -24,6 +24,7 @@ set(user_SOURCES
   src/ls.c
   src/cat.c
   src/forktest.c
+  src/clonetest.c
 
   # Benchmark
   src/benchmark/mmult.c

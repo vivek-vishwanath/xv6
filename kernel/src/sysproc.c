@@ -139,7 +139,12 @@ sys_setscheduler(void) {
 }
 
 int sys_clone(void) {
-  return -1;
+  void *stack;
+  int stack_sz;
+  if (argint(1, &stack_sz) < 0 || argptr(0, (char **) &stack, stack_sz) < 0) {
+    return -1;
+  }
+  return clone(stack, stack_sz);
 }
 int sys_park(void) {
   return -1;

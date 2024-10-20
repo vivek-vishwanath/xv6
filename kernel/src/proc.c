@@ -297,6 +297,33 @@ fork(void)
   return pid;
 }
 
+int clone(void *stack, int stack_sz) {
+  struct proc *nt = allocproc();
+  struct proc *curproc = myproc();
+  if (!nt) return -1;
+  nt->pgdir = curproc->pgdir;
+  nt->sz = curproc->sz;
+  nt->state = curproc->state;
+  nt->kstack = stack;
+  memmove(stack, curproc->kstack, stack_sz);
+  nt->parent = curproc;
+  *nt->tf = *curproc->tf;
+  nt->tf->eax = 0;
+
+  for(int i = 0; i < NOFILE; i++)
+    if(curproc->ofile[i])
+      nt->ofile[i] = filedup(curproc->ofile[i]);
+  nt->cwd = idup(curproc->cwd);
+
+  safestrcpy(nt->name, curproc->name, sizeof(curproc->name));
+
+  int pid = nt->pid;
+  acquire(&ptable.lock);
+  set_runnable(nt);
+  release(&ptable.lock);
+  return pid;
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.

@@ -1,4 +1,5 @@
 <!-- Added -->
+
 # Lab 4 -- User-Isolation, File Permissions and Large File Support
 
 The purpose of this lab is to have you explore how the kernel can enable
@@ -24,7 +25,7 @@ allow a user-space process within xv6 to modify or view the current uid `uid`:
 ```c
 /**
  * Sets the uid of the current process
- * 
+ *
  * @param uid The uid to change to. Valid ranges are 0x0 - 0xFFFF
  * @returns 0 on success, -1 on failure
  */
@@ -85,10 +86,10 @@ was added.
 **NOTE**:
 
 - Directory reads include the "path walk" a filesystem does to open a file in
-a nested directory
+  a nested directory
 - When creating or removing a file, the file's full directory path must be
-readable but ONLY the file's immediate directory needs to be both readable and
-writeable
+  readable but ONLY the file's immediate directory needs to be both readable and
+  writeable
 
 By default, when the build system creates the disk image `user/fs.img` that xv6
 will use in the build directory, all files should be owned by root and both
@@ -189,11 +190,11 @@ user-space cryptographic tools for hashing (`sha256`) and encrypting
 Your key contributions will be decision making in the design and implementation
 of a secure mechanism for storing and retrieving passwords in xv6. Please refer
 to content discussed in the security lectures as well as resources online
-regarding Linux's own password system for inspiration. The autograder will be 
-testing for correctness of your implementation being able to facilitate login, 
-but emphasis will be put on handgrading to check for secureness of your design. 
-Please include `login_design.md` in your final submission which describes what 
-mechanisms you utilized to secure your system, which files are created in the 
+regarding Linux's own password system for inspiration. The autograder will be
+testing for correctness of your implementation being able to facilitate login,
+but emphasis will be put on handgrading to check for secureness of your design.
+Please include `login_design.md` in your final submission which describes what
+mechanisms you utilized to secure your system, which files are created in the
 process, and what the content of those files mean.
 
 Instead of launching xv6 by using `xv6-qemu`, we have provided an alternative
@@ -230,14 +231,14 @@ init:
 /**
  * Hook into user/src/login/login_init.c in order to intialize any files or
  * data structures necessary for the login system
- * 
+ *
  * Called once per boot of xv6
  */
 void init_hook();
 
 /**
- * Check if user exists in system 
- * 
+ * Check if user exists in system
+ *
  * @param username A null-terminated string representing the username
  * @return 0 on success if user exists, -1 for failure otherwise
  */
@@ -247,7 +248,7 @@ int does_user_exist(char *username);
  * Create a user in the system associated with the username and password. Cannot
  * overwrite an existing username with a new password. Expectation is for
  * created users to have a unique non-root uid.
- * 
+ *
  * @param username A null-terminated string representing the username
  * @param password A null-terminated string representing the password
  * @return 0 on success, -1 for failure
@@ -258,7 +259,7 @@ int create_user(char *username, char *password);
  * Login a user in the system associated with the username and password. Launch
  * the shell under the right permissions for the user. If no such user exists
  * or the password is incorrect, then login will fail.
- * 
+ *
  * @param username A null-terminated string representing the username
  * @param password A null-terminated string representing the password
  * @return no return on success, -1 for failure
@@ -270,46 +271,48 @@ int login_user(char *username, char *password);
 
 - No mechanisms are in place for logging out. The expectation is to reboot xv6.
 - By default, there should exist a root user with username of `root` and
-password of `admin`. This user will maintain the uid of 0 and will not have to
-be created by manual entry.
+  password of `admin`. This user will maintain the uid of 0 and will not have to
+  be created by manual entry.
 - Created users should persist across reboots
 - Prior to the shell being launched, the user should have its permissions
-lowered to its uid
+  lowered to its uid
 - Changes made in the `xv6-qemu` file system will not persist to
-`login-xv6-qemu` and vice versa since they use different file system images.
+  `login-xv6-qemu` and vice versa since they use different file system images.
 
 <!-- Added -->
+
 ## Part 4 -- Large File Support
 
-Currently, the file system in xv6 is designed such that the maximum file size is only 140 sectors/blocks (in xv6, the size of a block and disk sector coincide). What if we want to store a large file, e.g., an image? In this part of the lab, you will be adding support for much larger file sizes. 
+Currently, the file system in xv6 is designed such that the maximum file size is only 140 sectors/blocks (in xv6, the size of a block and disk sector coincide). What if we want to store a large file, e.g., an image? In this part of the lab, you will be adding support for much larger file sizes.
 
 ### Free Blocks on Disk
 
 <!-- TODO: Replace with correct name and syscall -->
-To facilitate the tests for this part of the lab, you will first develop a simple reporting tool to check the number of free sectors on disk. For this, you must implement the function ```get_free_blocks``` as described below:
+
+To facilitate the tests for this part of the lab, you will first develop a simple reporting tool to check the number of free sectors on disk. For this, you must implement the function `get_free_blocks` as described below:
 
 ```c
 /**
  * Report the number of free blocks on the disk
- * 
+ *
  * @return number of free blocks (integer)
  */
 int get_free_blocks();
 ```
 
-You will only need to implement this function, which will then be used in the syscall ```report_stats```, used for testing correctness. **Do not modify** the ```report_stats``` function. 
+You will only need to implement this function, which will then be used in the syscall `report_stats`, used for testing correctness. **Do not modify** the `report_stats` function.
 
 ### File System Changes
 
 We would now like to support file sizes upto 8MB (1MB = $2^{20}$ bytes). To do so, you must identify the following:
 
-1. How is the limit of the file system size specified in xv6? 
-2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? **Contraint**: The *size* of this structure **must not change**. 
+1. How is the limit of the file system size specified in xv6?
+2. What determines the maximum size of any single file on xv6 (or for any Unix-like OS for that matter)? **Contraint**: The _size_ of this structure **must not change**.
 3. What functionality must be changed to ensure that more disk space can be taken up by a file than currently possible? (Hint: identify how space on disk is allocated/reclaimed)
 
 ### Design Choices
 
-Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. We have provided the syscall ```report_stats``` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes at any point in the system, for which the relevant functionality is defined in ```lab4_ag.c``` and other FS-related kernel source files. The syscall makes use of the struct ```disk_stat``` defined in ```stat.h```. This information will be used to autograde the design choice made; the design choice should not result in a significantly high number of disk I/Os. 
+Inherent to this part of the lab is a fundamental design choice which will accordingly determine the maximum file size that can be supported. We have provided the syscall `report_stats` to report the number of disk inode reads, disk inode writes, disk data reads and disk data writes at any point in the system, for which the relevant functionality is defined in `lab4_ag.c` and other FS-related kernel source files. The syscall makes use of the struct `disk_stat` defined in `stat.h`. This information will be used to autograde the design choice made; the design choice should not result in a significantly high number of disk I/Os.
 
 <!-- For this part of the lab, you will have to compare (at least) two different designs and write up a basic report describing the pros and cons of the different designs with respect to the metrics observed for these two workloads, explaining briefly why these differences arise. We also encourage you to develop more workloads to compare the different designs.  -->
 

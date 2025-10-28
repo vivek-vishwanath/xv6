@@ -69,6 +69,8 @@ exec(char *path, char **argv)
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;
 
+  // cprintf("Exec for proc #%d, with stack from bottom: 0x%x, to top: 0x%x\n", curproc->pid, curproc->bottom, curproc->top);
+
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
     if(argc >= MAXARG)
@@ -95,9 +97,9 @@ exec(char *path, char **argv)
   safestrcpy(curproc->name, last, sizeof(curproc->name));
 
   // Commit to the user image.
-  oldpgdir = curproc->pgdir;
-  curproc->pgdir = pgdir;
-  curproc->sz = sz;
+  oldpgdir = curproc->tgo->pgdir;
+  curproc->tgo->pgdir = pgdir;
+  curproc->tgo->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
   switchuvm(curproc);

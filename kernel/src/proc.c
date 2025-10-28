@@ -43,10 +43,10 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-  
+
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
-  
+
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
@@ -157,6 +157,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->policy = SCHED_RR;
+  p->tgo = p;
   int time = sys_uptime();
   p->info.creation_time = time;
   p->info.execution_time = 0;
@@ -202,10 +203,10 @@ userinit(void)
   p = allocproc();
   
   initproc = p;
-  if((p->pgdir = setupkvm()) == 0)
+  if((p->tgo->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
-  inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
-  p->sz = PGSIZE;
+  inituvm(p->tgo->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
+  p->tgo->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
@@ -216,7 +217,7 @@ userinit(void)
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
-  p->cwd = namei("/");
+  p->tgo->cwd = namei("/");
 
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
@@ -237,15 +238,15 @@ growproc(int n)
   uint sz;
   struct proc *curproc = myproc();
 
-  sz = curproc->sz;
+  sz = curproc->tgo->sz;
   if(n > 0){
-    if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
+    if((sz = allocuvm(curproc->tgo->pgdir, sz, sz + n)) == 0)
       return -1;
   } else if(n < 0){
-    if((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0)
+    if((sz = deallocuvm(curproc->tgo->pgdir, sz, sz + n)) == 0)
       return -1;
   }
-  curproc->sz = sz;
+  curproc->tgo->sz = sz;
   switchuvm(curproc);
   return 0;
 }
@@ -266,13 +267,13 @@ fork(void)
   }
 
   // Copy process state from proc.
-  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+  if((np->tgo->pgdir = copyuvm(curproc->tgo->pgdir, curproc->tgo->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
     np->state = UNUSED;
     return -1;
   }
-  np->sz = curproc->sz;
+  np->tgo->sz = curproc->tgo->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
@@ -280,9 +281,9 @@ fork(void)
   np->tf->eax = 0;
 
   for(i = 0; i < NOFILE; i++)
-    if(curproc->ofile[i])
-      np->ofile[i] = filedup(curproc->ofile[i]);
-  np->cwd = idup(curproc->cwd);
+    if(curproc->tgo->ofile[i])
+      np->tgo->ofile[i] = filedup(curproc->tgo->ofile[i]);
+  np->tgo->cwd = idup(curproc->tgo->cwd);
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
@@ -297,27 +298,56 @@ fork(void)
   return pid;
 }
 
-int clone(void *stack, int stack_sz) {
-  struct proc *nt = allocproc();
+int clone(void *stack, int new_stack_sz) {
+  int pid;
+  struct proc *nt;
   struct proc *curproc = myproc();
-  if (!nt) return -1;
-  nt->pgdir = curproc->pgdir;
-  nt->sz = curproc->sz;
-  nt->state = curproc->state;
-  nt->kstack = stack;
-  memmove(stack, curproc->kstack, stack_sz);
+
+  // Allocate process.
+  if((nt = allocproc()) == 0){
+    return -1;
+  }
+
+  // Copy process state from proc.
+  nt->tgo->pgdir = curproc->tgo->pgdir;
+  // Change proc->tgo->sz to uint*
+  nt->tgo->sz = curproc->tgo->sz;
+  nt->is_thread = 1;
+
   nt->parent = curproc;
   *nt->tf = *curproc->tf;
+  nt->tgo = curproc->tgo;
+
+  // Clear %eax so that fork returns 0 in the child.
   nt->tf->eax = 0;
 
-  for(int i = 0; i < NOFILE; i++)
-    if(curproc->ofile[i])
-      nt->ofile[i] = filedup(curproc->ofile[i]);
-  nt->cwd = idup(curproc->cwd);
+  // Find bottom of stack (where %ra = 0xFFFFFFFF)
+  uint *base = (uint *) curproc->tf->ebp;
+  while (*(base + 1) != -1)
+    base = (uint *) *base;
+  uint old_stack_sz = (uint) (base + 2) - curproc->tf->esp;
+  if (old_stack_sz > new_stack_sz) {
+    kfree(nt->kstack);
+    nt->kstack = 0;
+    nt->state = UNUSED;
+    return -1;
+  }
+  nt->tf->esp = (uint) stack + new_stack_sz - old_stack_sz;
+  memmove((int *) nt->tf->esp, (int *) curproc->tf->esp, old_stack_sz);
+
+  base = (uint *) curproc->tf->ebp;
+  uint offset = nt->tf->esp - curproc->tf->esp;
+
+  // Remap base pointers
+  nt->tf->ebp = curproc->tf->ebp + offset;
+  while (*(base + 1) != -1) {
+    *(uint *) ((int) base + offset) = *base + offset;
+    base = (uint *) *base;
+  }
 
   safestrcpy(nt->name, curproc->name, sizeof(curproc->name));
 
-  int pid = nt->pid;
+  pid = nt->pid;
   acquire(&ptable.lock);
   set_runnable(nt);
   release(&ptable.lock);
@@ -345,17 +375,19 @@ exit(void)
     panic("init exiting");
 
   // Close all open files.
-  for(fd = 0; fd < NOFILE; fd++){
-    if(curproc->ofile[fd]){
-      fileclose(curproc->ofile[fd]);
-      curproc->ofile[fd] = 0;
+  if (!curproc->is_thread) {
+    for(fd = 0; fd < NOFILE; fd++){
+      if(curproc->tgo->ofile[fd]){
+        fileclose(curproc->tgo->ofile[fd]);
+        curproc->tgo->ofile[fd] = 0;
+      }
     }
-  }
 
-  begin_op();
-  iput(curproc->cwd);
-  end_op();
-  curproc->cwd = 0;
+    begin_op();
+    iput(curproc->tgo->cwd);
+    end_op();
+    curproc->tgo->cwd = 0;
+  }
 
   acquire(&ptable.lock);
 
@@ -385,7 +417,7 @@ wait(void)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -399,7 +431,8 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
+        if (!p->is_thread)
+          freevm(p->tgo->pgdir);
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
@@ -415,6 +448,44 @@ wait(void)
       release(&ptable.lock);
       return -1;
     }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+  }
+}
+int
+waitpid(int pid)
+{
+  struct proc *p;
+  struct proc *curproc = myproc();
+
+  acquire(&ptable.lock);
+  struct proc *target = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if (p->pid == pid) {
+        target = p;
+        break;
+      }
+    }
+  if (!target || p->parent != curproc || curproc->killed){
+    release(&ptable.lock);
+    return -1;
+  }
+  for(;;){
+      if(p->state == ZOMBIE){
+        // Found one.
+        kfree(p->kstack);
+        p->kstack = 0;
+        if (!p->is_thread)
+          freevm(p->tgo->pgdir);
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        p->state = UNUSED;
+        release(&ptable.lock);
+        return 0;
+      }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(curproc, &ptable.lock);  //DOC: wait-sleep
@@ -523,7 +594,7 @@ void
 sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
-  
+
   if(p == 0)
     panic("sleep");
 

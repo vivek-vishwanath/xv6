@@ -51,7 +51,7 @@ sys_sbrk(void)
 
   if(argint(0, &n) < 0)
     return -1;
-  addr = myproc()->sz;
+  addr = myproc()->tgo->sz;
   if(growproc(n) < 0)
     return -1;
   return addr;
@@ -127,15 +127,18 @@ sys_setscheduler(void) {
     return -1;
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (p->pid == pid) {
+      struct proc *curproc = myproc();
+      if (p->state == ZOMBIE || p->state == UNUSED) return -1;
+      if (p != curproc && p->parent != curproc) return -1;
       p->policy = policy;
       p->priority = priority;
-      break;
+      remove_from_rq(p);
+      add_to_rq(p);
+      yield();
+      return pid;
     }
   }
-  remove_from_rq(p);
-  add_to_rq(p);
-  yield();
-  return pid;
+  return -1;
 }
 
 int sys_clone(void) {
@@ -156,5 +159,9 @@ int sys_unpark(void) {
   return -1;
 }
 int sys_waitpid(void) {
-  return -1;
+  int pid;
+  if (argint(0, &pid) < 0) {
+    return -1;
+  }
+  return waitpid(pid);
 }

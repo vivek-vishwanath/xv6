@@ -15,31 +15,43 @@
 //  write(fd, s, strlen(s));
 //}
 
+int global = 0;
+
 void
 clonetest(void)
 {
   int n, pid;
 
+  int pre_clone = 0;
+
   printf(1, "clone test\n");
-
-  int policies[] = {0, 0, SCHED_FIFO, SCHED_RR, SCHED_RR, SCHED_FIFO, SCHED_FIFO, SCHED_RR};
-  int priorities[] = {0, 0, 9, 1, 1, 1, 2, 2};
-
-  setscheduler(3, SCHED_FIFO, 9);
-
   for(n=0; n<N; n++){
-    pid = clone(malloc(4096), 4096);
-    if (pid)
-      setscheduler(pid, policies[pid-1], priorities[pid-1]);
-    if(pid < 0)
+    printf(1, "Cloning thread $%d\n", n);
+    pid = clone(malloc(0x1000), 0x1000);
+    if(pid < 0) {
+      printf(1, "clone() failed, %d\n", pid);
       break;
+    }
     if(pid == 0) {
-      int x = 1;
-      while (x < 0x8000000) x++;
+      if (n != 2)
+        setscheduler(6, SCHED_FIFO, 1);
+      int post_clone = 0;
+      while (post_clone < 0x200000) {
+        post_clone++;
+        pre_clone++;
+        global++;
+      }
+      printf(1, "%d returned\n", n+1);
+      // printf(1, "child thread #%d returned\tpre-clone: 0x%x;\tpost-clone: 0x%x;\tglobal: 0x%x\n", n+1, pre_clone, post_clone, global);
       exit();
     }
+      // if (pid == 7) {
+      //   setscheduler(6, SCHED_FIFO, 1);
+      // }
+      // printf(1, "parent returned\t\t\tpre-clone: 0x%x;\t\t\t\t\tglobal: 0x%x\n", pre_clone, global);
   }
-  while (wait() >= 0);
+
+  while(wait() >= 0);
 
   if(n == N){
     printf(1, "clone claimed to work %d times!\n", N);
@@ -61,9 +73,17 @@ clonetest(void)
   printf(1, "clone test OK\n");
 }
 
+void ctest(void) {
+  int x = 0x123456;
+  int y[16];
+  (void) x;
+  (void) y;
+  clonetest();
+}
+
 int
 main(void)
 {
-  clonetest();
+  ctest();
   exit();
 }

@@ -1,3 +1,5 @@
+#ifndef SPINLOCK_H
+#define SPINLOCK_H
 #include <stdatomic.h>
 
 // Mutual exclusion lock.
@@ -11,3 +13,4 @@ struct spinlock {
                      // that locked the lock.
 };
 
+#endif

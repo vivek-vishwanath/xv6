@@ -121,6 +121,7 @@ void            userinit(void);
 int             wait(void);
 int             waitpid(int);
 void            wakeup(void*);
+void            wakeup1(void*);
 void            yield(void);
 
 // swtch.S

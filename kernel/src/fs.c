@@ -628,8 +628,12 @@ namex(char *path, int nameiparent, char *name)
 
   if(*path == '/')
     ip = iget(ROOTDEV, ROOTINO);
-  else
-    ip = idup(myproc()->tgo->cwd);
+  else {
+    struct proc *p = myproc();
+    acquire(&p->tgo->lk);
+    ip = idup(p->tgo->cwd);
+    release(&p->tgo->lk);
+  }
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);

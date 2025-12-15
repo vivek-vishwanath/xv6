@@ -160,8 +160,10 @@ switchuvm(struct proc *p)
     panic("switchuvm: no process");
   if(p->kstack == 0)
     panic("switchuvm: no kstack");
+  acquire(&p->tgo->lk);
   if(p->tgo->pgdir == 0)
     panic("switchuvm: no pgdir");
+  release(&p->tgo->lk);
 
   pushcli();
   mycpu()->gdt[SEG_TSS] = SEG16(STS_T32A, &mycpu()->ts,
@@ -173,7 +175,9 @@ switchuvm(struct proc *p)
   // forbids I/O instructions (e.g., inb and outb) from user space
   mycpu()->ts.iomb = (ushort) 0xFFFF;
   ltr(SEG_TSS << 3);
+  acquire(&p->tgo->lk);
   lcr3(V2P(p->tgo->pgdir));  // switch to process's address space
+  release(&p->tgo->lk);
   popcli();
 }
 

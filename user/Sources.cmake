@@ -23,8 +23,9 @@ set(user_SOURCES
   # Common utility programs
   src/ls.c
   src/cat.c
-  src/forktest.c
+  src/schedtest.c
   src/clonetest.c
+  src/threadtest.c
 
   # Benchmark
   src/benchmark/mmult.c

@@ -1,5 +1,6 @@
 #include <sched.h>
 #include <stdatomic.h>
+#include "spinlock.h"
 
 // Per-CPU state
 struct cpu {
@@ -37,6 +38,8 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+enum parkstate { DRIVING, WILL_PARK, WONT_PARK };
+
 // Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
@@ -44,7 +47,7 @@ struct proc {
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
   int pid;                     // Process ID
-  struct proc *tgo;             // Thread Group Owner
+  struct proc *tgo;            // Thread Group Owner
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
@@ -54,14 +57,24 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  int is_thread;
+  struct spinlock lk;          // Thread Group Lock
+
+  enum parkstate park;
 
   uint policy;                 // The scheduling policy used (FIFO or RR)
   uint priority;               // The logical priority of the process
-  struct proc *back;           // Back ptr to previous process in the RQ
   struct proc *next;           // Next process in the ready queue
-  struct schedinfo info;      // Info about the process's execution
+  struct schedinfo info;       // Info about the process's execution
+
+  double vruntime;
 };
+
+struct ptable_struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+};
+
+extern struct ptable_struct ptable;
 
 // Process memory is laid out contiguously, low addresses first:
 //   text

@@ -19,8 +19,12 @@ fetchint(uint addr, int *ip)
 {
   struct proc *curproc = myproc();
 
-  if(addr >= curproc->tgo->sz || addr+4 > curproc->tgo->sz)
+  acquire(&curproc->tgo->lk);
+  if(addr >= curproc->tgo->sz || addr+4 > curproc->tgo->sz) {
+    release(&curproc->tgo->lk);
     return -1;
+  }
+  release(&curproc->tgo->lk);
   *ip = *(int*)(addr);
   return 0;
 }
@@ -34,10 +38,14 @@ fetchstr(uint addr, char **pp)
   char *s, *ep;
   struct proc *curproc = myproc();
 
-  if(addr >= curproc->tgo->sz)
+  acquire(&curproc->tgo->lk);
+  if(addr >= curproc->tgo->sz) {
+    release(&curproc->tgo->lk);
     return -1;
+  }
   *pp = (char*)addr;
   ep = (char*)curproc->tgo->sz;
+  release(&curproc->tgo->lk);
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -63,8 +71,12 @@ argptr(int n, char **pp, int size)
  
   if(argint(n, &i) < 0)
     return -1;
-  if(size < 0 || (uint)i >= curproc->tgo->sz || (uint)i+size > curproc->tgo->sz)
+  acquire(&curproc->tgo->lk);
+  if(size < 0 || (uint)i >= curproc->tgo->sz || (uint)i+size > curproc->tgo->sz) {
+    release(&curproc->tgo->lk);
     return -1;
+  }
+  release(&curproc->tgo->lk);
   *pp = (char*)i;
   return 0;
 }
@@ -109,6 +121,7 @@ extern int sys_park(void);
 extern int sys_setpark(void);
 extern int sys_unpark(void);
 extern int sys_waitpid(void);
+extern int sys_waitinfo(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -137,7 +150,8 @@ static int (*syscalls[])(void) = {
 [SYS_park]    sys_park,
 [SYS_setpark] sys_setpark,
 [SYS_unpark]  sys_unpark,
-[SYS_waitpid] sys_waitpid
+[SYS_waitpid] sys_waitpid,
+[SYS_waitinfo] sys_waitinfo,
 };
 
 void

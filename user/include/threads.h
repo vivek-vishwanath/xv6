@@ -13,8 +13,11 @@ int thread_wait(int pid);
 /** Spinlock */
 
 struct spinlock {
-  // You may add fields if needed
+  int id;
+  int locked;
 };
+
+extern int spinlock_id;
 
 int spinlock_init(struct spinlock*);
 int spinlock_acquire(struct spinlock*);
@@ -23,8 +26,11 @@ int spinlock_release(struct spinlock*);
 /** Mutex */
 
 struct mutex {
-  // You may add fields if needed
+  int id;
+  int locked;
 };
+
+extern int mutex_id;
 
 int mutex_init(struct mutex*);
 int mutex_acquire(struct mutex*);
@@ -34,8 +40,10 @@ int mutex_release(struct mutex*);
 /** Cond var */
 
 struct condvar {
-  // You may add fields if needed
+  int id;
 };
+
+extern int condvar_id;
 
 int cond_init(struct condvar *);
 int cond_wait(struct condvar *, struct mutex *);

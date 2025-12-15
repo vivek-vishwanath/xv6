@@ -26,3 +26,4 @@
 #define SYS_setpark 25
 #define SYS_unpark 26
 #define SYS_waitpid 27
+#define SYS_waitinfo 28

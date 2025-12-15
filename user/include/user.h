@@ -1,4 +1,5 @@
 struct stat;
+struct schedinfo;
 struct rtcdate;
 
 // system calls
@@ -29,6 +30,7 @@ int park(void *);
 int setpark(void *);
 int unpark(void *);
 int waitpid(int);
+int waitinfo(struct schedinfo *info);
 
 // ulib.c
 int stat(const char *, struct stat *);

@@ -56,8 +56,7 @@ void nwait(uint n)
 	(void)info;
 	for (; n != 0; n--) {
 		// TODO replace wait with waitinfo once it is implemented
-		// int pid = waitinfo(&info);
-		int pid = wait();
+		int pid = waitinfo(&info);
 		printf(1,
 		       "[%d] creation %d, exit %d, response %d, execution %d, wait %d, io %d\n",
 		       pid, info.creation_time, info.exit_time,
@@ -75,7 +74,7 @@ void spawn_tasks(char **args, int sched)
 	}
 	if (pid == 0) {
 		// TODO: uncomment these lines once setscheduler is implemented
-		// setscheduler(getpid(), sched, 0);
+		setscheduler(getpid(), sched, 0);
 		exec(args[0], args);
 		exit();
 	}
@@ -86,7 +85,7 @@ void benchmark(int scheduler)
 	// make the workload spawner high-priority
 
 	// TODO: uncomment these lines once setscheduler is implemented
-	// setscheduler(getpid(), scheduler, 42);
+	setscheduler(getpid(), scheduler, 42);
 
 	for (int t = 0; t < NTASKS; t++) {
 		// sequentially schedule tasks

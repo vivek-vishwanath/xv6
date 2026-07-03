@@ -21,9 +21,10 @@ struct superblock {
   uint bmapstart;    // Block number of first free map block
 };
 
-#define NDIRECT 11
+#define NDIRECT 10
 #define NINDIRECT (BSIZE / sizeof(uint))
-#define MAXFILE (NDIRECT + NINDIRECT)
+#define NDINDIRECT (BSIZE * BSIZE / sizeof(uint) / sizeof(uint))
+#define MAXFILE (NDIRECT + NINDIRECT + NDINDIRECT)
 
 #define PROT_R (1 << 0)
 #define PROT_W (1 << 1)
@@ -37,7 +38,7 @@ struct dinode {
   uint size;            // Size of file (bytes)
   ushort owner;         // Added for lab4: Owner of the inode
   ushort perms;         // Added for lab4: Permission of the inode
-  uint addrs[NDIRECT+1];   // Data block addresses
+  uint addrs[NDIRECT+2];   // Data block addresses
 };
 
 // Inodes per block.

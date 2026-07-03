@@ -1,0 +1,235 @@
+commit 8fcb554821bae2fdf7cc06b4aecffa4b0553cb32
+Merge: 828b488 a967650
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Wed Nov 20 18:17:46 2024 -0500
+
+    Merge branch 'lab4.3' into lab4.4
+
+commit a96765093ae58aacc9ef6d795b9358af660141ee
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Wed Nov 20 18:17:36 2024 -0500
+
+    impl salting & login write-up
+
+commit 828b488288612fdd0d487b8b9458880c164b892d
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Wed Nov 20 11:15:54 2024 -0500
+
+    bugfix: mkfs double indirection
+
+commit 5adb34d261c877900273385c01a057208c1e3e70
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 22:42:04 2024 -0500
+
+    fix get_free_blocks()
+
+commit 6ef3de87822d2143b8a80ad8b74222377ba4f12c
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 20:15:45 2024 -0500
+
+    bugfix: erroneous if statement
+
+commit e421f44d5c42c51e166826427d2aa5ca8c57c391
+Merge: 79c0203 28d32ca
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 19:17:03 2024 -0500
+
+    Merge branch 'lab4.3' into lab4.4
+
+commit 28d32ca47f5a0ab09e5b05d3356aa23bd4a92493
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 19:16:47 2024 -0500
+
+    disallow duplicate usernames
+
+commit 79c020309ae92a1c9763dda83f6ca72154c743f0
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 19:11:45 2024 -0500
+
+    impl large file support with double indirect inode blocks
+
+commit c1ca0df55b6bfbc92751916ee9ce0b6083a55f9b
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 19 11:42:12 2024 -0500
+
+    Stop checking after invalid username/password
+
+commit e3ed1645ff0f5d66fa18603593547545dd7fa996
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Mon Nov 18 12:58:41 2024 -0500
+
+    set max_username_length to 100 & remove print statements
+
+commit 71b6440ed8819b40cddb361aba62420e1f299c8d
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Mon Nov 18 12:58:10 2024 -0500
+
+    restrict can_read for recursive dirs, chdir, & exec
+
+commit 702877dcffd699f42161940e008fde5d512fd515
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Mon Nov 18 11:40:53 2024 -0500
+
+    set default R/W perms to 0
+
+commit c9601e7b56c1eb1066b222d2e0b92727d6e9c231
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Mon Nov 18 11:40:38 2024 -0500
+
+    move can_read/write calls to create & sys_open ONLY
+
+commit fa96a9956146e9eb16a074bea3894047ce36fa18
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 21:19:04 2024 -0500
+
+    remove goto in chown/chmod
+
+commit 0db724881083258b5bc0aaa97a7cc3e0da497a0b
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:53:04 2024 -0500
+
+    minor-bugfix: use correct constants
+
+commit 212ebbe57ebd3d07681d57eafda4495188c3ad44
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:52:32 2024 -0500
+
+    draft unit test cmds
+
+commit f83766fa9b612fd969f05b09c1114d5b2efda4b9
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:51:46 2024 -0500
+
+    impl login
+
+commit a1f6335d5cf5d5dcfb1b22a4a3739ba51123de2a
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:51:12 2024 -0500
+
+    bugfix: read inode before checking owner
+
+commit ff64a0b5d76564079fa91db9211dadd6b117296f
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:50:37 2024 -0500
+
+    permit reads/writes from root
+
+commit cc64a9fac4349e3df50d09f633e7981a7b3a829e
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 16 20:50:11 2024 -0500
+
+    move owner/perms in inode struct
+
+commit 023ff16354d953bb6bb5240fb493390ac8d4389b
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Fri Nov 15 15:26:20 2024 -0500
+
+    change owner/perms to ushort & fix perms bounds (0..3)
+
+commit 1c5c78b737b199dfb1966a72918c467a2e84abb5
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Thu Nov 14 22:20:46 2024 -0500
+
+    persist owner/perms to disk
+
+commit 4c0aacf6466fea0b3d3671acbb50c5348fc5a6ab
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Thu Nov 14 22:20:01 2024 -0500
+
+    refactor owner/perms from file to inode struct
+
+commit 8283524c68c1a042b61775d97dcde117f9e86277
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Thu Nov 14 15:41:16 2024 -0500
+
+    check owner for chmod/chown
+
+commit 5a3b424bbd349b2c53e9eecd899023991285a904
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 12 23:18:17 2024 -0500
+
+    impl chmod/chown & refactor sys_open
+
+commit dbf16ce703b40ae521e9dbb5810d0197a6bd2f6c
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Tue Nov 12 23:17:33 2024 -0500
+
+    fix read/write perms
+
+commit ad22d2610cc5bfce6759d8ecc4675e31069a7fc8
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Mon Nov 11 19:08:04 2024 -0500
+
+    impl file perm restrictions
+
+commit 804e435530a53b5708746fe7cfef3947461bc6da
+Author: vivek-vishwanath <vivs005@gmail.com>
+Date:   Sat Nov 9 15:06:36 2024 -0500
+
+    impl uid syscalls
+
+commit a99f0ed8e4ed324bf8d28ceb79c9af1c5f507073
+Author: Aidan Parsa <aparsa@Aidans-MacBook-Pro-4.local>
+Date:   Thu Nov 7 12:19:16 2024 -0500
+
+    Fall24
+
+commit e624277999afac8da6ef4d4027693e5201260021
+Author: Colten Webb <coltenwebb@gmail.com>
+Date:   Fri Apr 5 13:12:45 2024 -0400
+
+    fixes for compiling locally
+
+commit 675d3aa04d2cb2d19c29598e6bb988d66405d7d2
+Author: Colten Webb <coltenwebb@gmail.com>
+Date:   Thu Mar 28 11:12:53 2024 -0400
+
+    small fixes
+
+commit e4ffdb9b3a13c6aa06d362479e418936e8445304
+Author: Colten Webb <coltenwebb@gmail.com>
+Date:   Thu Mar 28 11:06:44 2024 -0400
+
+    simplify writeup, remove sudo
+
+commit c65e644d511a08a739deea91dc07dc5905308661
+Author: Siddharth <ssundaram38@gatech.edu>
+Date:   Tue Mar 26 00:11:30 2024 -0400
+
+    feat: edited README
+
+commit f334f9bd748a4fc02774a85e948991c4b816e097
+Author: Siddharth <ssundaram38@gatech.edu>
+Date:   Sun Mar 24 16:43:45 2024 -0400
+
+    feat: removed workloads and changed README
+
+commit 6f2e3c0e4e44f8425f080a5847154f7b79409794
+Author: Siddharth <ssundaram38@gatech.edu>
+Date:   Sun Mar 24 15:54:31 2024 -0400
+
+    extension
+
+commit 3578edb01f39f677b2b3c1c91b1725990f007c16
+Author: Colten Webb <coltenwebb@gmail.com>
+Date:   Thu Nov 9 10:34:43 2023 -0500
+
+    adam's updates to readme
+
+commit 5baecfa1cfa7a6915728dea1bb92908e4570f4e9
+Author: Colten Webb <coltenwebb@gmail.com>
+Date:   Wed Nov 8 17:30:31 2023 -0500
+
+    update for fall 2023
+
+commit c45ed906be5d7bcfd4eda96d752a3ba50c6d74a9
+Author: Jack Wolfard <jackwolfard@gmail.com>
+Date:   Sat Apr 9 15:05:35 2022 -0400
+
+    Update lab4 for Spring 2022 (pt4, test case breakdown)
+
+commit c933e8d353e3f62645761102ba617d2b11ed39f3
+Author: Jack Wolfard <jackwolfard@gmail.com>
+Date:   Wed Apr 6 15:30:46 2022 -0400
+
+    Update lab4 for Spring 2022 (pt3)

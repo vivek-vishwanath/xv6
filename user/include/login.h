@@ -2,6 +2,16 @@
 #define INCLUDE_LOGIN_h_
 
 #define MAX_INPUT_SIZE (100)
+#include <crypto.h>
+
+struct user {
+ ushort uid;
+ uchar salt[SHA256_SIZE_BYTES];
+ uchar hash[SHA256_SIZE_BYTES];
+ char username[MAX_INPUT_SIZE];
+};
+
+void save_password(struct user *user, char *password);
 
 /**
  * Hook into user/src/login/login_init.c in order to intialize any files or

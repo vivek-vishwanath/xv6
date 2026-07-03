@@ -241,6 +241,8 @@ ialloc(ushort type)
   din.type = xshort(type);
   din.nlink = xshort(1);
   din.size = xint(0);
+  din.owner = xshort(0);
+  din.perms = xshort(PROT_R | PROT_W);
   winode(inum, &din);
   return inum;
 }
@@ -275,7 +277,7 @@ iappend(uint inum, void *xp, int n)
 
   rinode(inum, &din);
   off = xint(din.size);
-  // printf("append inum %d at off %d sz %d\n", inum, off, n);
+  printf("append inum %d at off %d (%d) sz %d\n", inum, off, off / BSIZE, n);
   while(n > 0){
     fbn = off / BSIZE;
     assert(fbn < MAXFILE);
@@ -284,7 +286,7 @@ iappend(uint inum, void *xp, int n)
         din.addrs[fbn] = xint(freeblock++);
       }
       x = xint(din.addrs[fbn]);
-    } else {
+    } else if (fbn < NDIRECT + NINDIRECT) {
       if(xint(din.addrs[NDIRECT]) == 0){
         din.addrs[NDIRECT] = xint(freeblock++);
       }
@@ -294,6 +296,25 @@ iappend(uint inum, void *xp, int n)
         wsect(xint(din.addrs[NDIRECT]), (char*)indirect);
       }
       x = xint(indirect[fbn-NDIRECT]);
+    } else {
+      if (xint(din.addrs[NDIRECT + 1]) == 0) {
+        din.addrs[NDIRECT + 1] = xint(freeblock++);
+      }
+      uint a = xint(din.addrs[NDIRECT + 1]);
+      rsect(a, indirect);
+      ulong lvl1 = (fbn - NDIRECT - NINDIRECT) / NINDIRECT;
+      if (indirect[lvl1] == 0) {
+        indirect[lvl1] = xint(freeblock++);
+        wsect(a, indirect);
+      }
+      uint b = xint(indirect[lvl1]);
+      rsect(b, indirect);
+      ulong lvl2 = (fbn - NDIRECT - NINDIRECT) % NINDIRECT;
+      if (indirect[lvl2] == 0) {
+        indirect[lvl2] = xint(freeblock++);
+        wsect(b, indirect);
+      }
+      x = xint(indirect[lvl2]);
     }
     n1 = min(n, (fbn + 1) * BSIZE - off);
     rsect(x, buf);

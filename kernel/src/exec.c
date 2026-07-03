@@ -28,6 +28,12 @@ exec(char *path, char **argv)
     return -1;
   }
   ilock(ip);
+  if (!can_read(ip)) {
+    iunlockput(ip);
+    end_op();
+    cprintf("exec: fail; unpermitted\n");
+    return -1;
+  }
   pgdir = 0;
 
   // Check ELF header

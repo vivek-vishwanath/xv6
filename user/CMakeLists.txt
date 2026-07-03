@@ -91,16 +91,17 @@ get_property(l_default_targets GLOBAL PROPERTY default_targets)
 message("DEFAULT_TARGETS includes: ${l_default_targets}")
 
 configure_file(${CMAKE_SOURCE_DIR}/README ${CMAKE_CURRENT_BINARY_DIR}/README COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/img ${CMAKE_CURRENT_BINARY_DIR}/img COPYONLY)
 
 add_custom_command(
   OUTPUT fs.img
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../tools/mkfs fs.img ${l_default_programs} README ${l_user_programs} 
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../tools/mkfs fs.img ${l_default_programs} README img ${l_user_programs}
   DEPENDS mkfs ${CMAKE_SOURCE_DIR}/README ${l_user_targets} ${l_default_targets}
 )
 
 add_custom_command(
   OUTPUT login_fs.img
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../tools/mkfs login_fs.img ${l_login_programs} README ${l_user_programs} 
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../tools/mkfs login_fs.img ${l_login_programs} README ${l_user_programs}
   DEPENDS mkfs ${CMAKE_SOURCE_DIR}/README ${l_user_targets} ${l_login_targets}
 )
 

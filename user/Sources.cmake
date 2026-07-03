@@ -32,6 +32,12 @@ set(user_SOURCES
 
   # Common utility programs
   src/ls.c
+  src/cat.c
+  src/touch.c
+  src/chmod.c
+  src/mkdir.c
+  src/falloc.c
+  src/report.c
 
   # Test programs
   src/crypto/test/test_sha256.c

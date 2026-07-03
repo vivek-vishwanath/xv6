@@ -17,6 +17,11 @@
 #include "fcntl.h"
 #include "lab4_ag.h"
 
+extern struct {
+  struct spinlock lock;
+  struct file file[NFILE];
+} ftable;
+
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int
@@ -51,6 +56,29 @@ fdalloc(struct file *f)
     }
   }
   return -1;
+}
+
+int sys_getuid(void) {
+  return myproc()->uid;
+}
+
+int sys_setuid(void) {
+  int uid;
+  if (argint(0, &uid) < 0) return -1;
+  if (uid < 0x0 || uid >= 0x10000) return -1;
+  if (myproc()->uid) return -1;
+  myproc()->uid = uid;
+  return 0;
+}
+
+int can_read(struct inode *ip) {
+  struct proc *p = myproc();
+  return !p || p->uid == 0 || p->uid == ip->owner || ip->perms & PROT_R;
+}
+
+int can_write(struct inode *ip) {
+  struct proc *p = myproc();
+  return !p || p->uid == 0 || p->uid == ip->owner || ip->perms & PROT_W;
 }
 
 int
@@ -249,6 +277,11 @@ create(char *path, short type, short major, short minor)
     return 0;
   ilock(dp);
 
+  if (!can_write(dp)) {
+    iunlockput(dp);
+    return 0;
+  }
+
   if((ip = dirlookup(dp, name, 0)) != 0){
     iunlockput(dp);
     ilock(ip);
@@ -265,6 +298,8 @@ create(char *path, short type, short major, short minor)
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
+  ip->owner = myproc()->uid;
+  ip->perms = 0;
   iupdate(ip);
 
   if(type == T_DIR){  // Create . and .. entries.
@@ -283,17 +318,15 @@ create(char *path, short type, short major, short minor)
   return ip;
 }
 
-int
-sys_open(void)
-{
-  char *path;
-  int fd, omode;
+int sys_open(void) {
+  int fd;
   struct file *f;
   struct inode *ip;
+  char *path;
+  int omode;
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
-
   begin_op();
 
   if(omode & O_CREATE){
@@ -313,6 +346,12 @@ sys_open(void)
       end_op();
       return -1;
     }
+  }
+
+  if (((omode & O_RDONLY || omode & O_RDWR) && !can_read(ip)) || ((omode & O_WRONLY || omode & O_RDWR) && !can_write(ip))) {
+    iunlockput(ip);
+    end_op();
+    return -1;
   }
 
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
@@ -382,7 +421,7 @@ sys_chdir(void)
     return -1;
   }
   ilock(ip);
-  if(ip->type != T_DIR){
+  if(ip->type != T_DIR || !can_read(ip)){
     iunlockput(ip);
     end_op();
     return -1;
@@ -441,6 +480,61 @@ sys_pipe(void)
   }
   fd[0] = fd0;
   fd[1] = fd1;
+  return 0;
+}
+
+int
+sys_chown(void) {
+  char *filename;
+  int uid;
+  if (argptr(0, &filename, 4) < 0 || argint(1, &uid) < 0) return -1;
+  if (uid < 0x0 || uid >= 0x10000) return -1;
+
+  begin_op();
+  struct inode *ip = namei(filename);
+  if (!ip) {
+    end_op();
+    return -1;
+  }
+  struct proc *p = myproc();
+  ilock(ip);
+  if (p->uid != 0 && p->uid != ip->owner) {
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+  ip->owner = uid;
+  iupdate(ip);
+  iunlock(ip);
+  end_op();
+  return 0;
+}
+
+int
+sys_chmod(void) {
+  char *filename;
+  int perms;
+  if (argptr(0, &filename, 4) < 0) return -1;
+  if (argint(1, &perms) < 0) return -1;
+  if (perms < 0 || perms > 3) return -1;
+
+  begin_op();
+  struct inode *ip = namei(filename);
+  if (!ip) {
+    end_op();
+    return -1;
+  }
+  struct proc *p = myproc();
+  ilock(ip);
+  if (p->uid != 0 && p->uid != ip->owner) {
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+  ip->perms = perms;
+  iupdate(ip);
+  iunlock(ip);
+  end_op();
   return 0;
 }
 
